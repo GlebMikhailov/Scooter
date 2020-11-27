@@ -2,6 +2,8 @@
 buildscript {
     ext {
 
+
+        appCenterSdkVersion = '4.0.0'
         nav_version = '2.3.1'
         kotlin_corutines_version = '1.4.1'
         moxy_version = '2.2.0'
