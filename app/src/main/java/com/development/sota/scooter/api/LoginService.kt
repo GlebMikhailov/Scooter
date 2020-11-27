@@ -5,12 +5,11 @@ import io.reactivex.rxjava3.core.Observable
 import retrofit2.http.*
 
 interface LoginService {
-    @POST("ClientLogin/")
+
+    @POST("ClientLogIn/")
     @FormUrlEncoded
     @Headers(
-        "User-Agent: Sota Dev Scooter Android Web Connector",
-        "Connection: close"
-    )
+        "User-Agent: Sota Dev Scooter Android Web Connector")
     fun clientLogin(
         @Field("phone") phone: String,
         @Field("name") name: String

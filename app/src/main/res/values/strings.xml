@@ -7,4 +7,27 @@
     <string name="login_get_code">Запросить код</string>
     <string name="login_agree_and_get_code">Согласиться и запросить код</string>
     <string name="login_oops">Что-то пошло не так. Проверьте правильность введённых данных</string>
+    <string name="login_code">Код подтверждения</string>
+    <string name="login_input_code">Введите код, высланный на номер</string>
+    <string name="login_request_code_again">Запросить код повторно</string>
+    <string name="login_ticker_text">Отправить код снова через</string>
+
+    <string name="login_tutorial_label_1">Начало поездки</string>
+    <string name="login_tutorial_body_1">Найдите свой скутер на карте, подойдите, отсканируйте его QR-код возле руля.</string>
+    <string name="login_tutorial_label_2">Открой замок</string>
+    <string name="login_tutorial_body_2">Открой замок. После включения самоката, выньте трос из гнезда, в месте, указанном стрелкой. Если самокат без электрического замка, отстегните карабин.</string>
+    <string name="login_tutorial_label_3">Как набрать скорость</string>
+    <string name="login_tutorial_body_3">Оттолкнитесь ногой для начала движения, используйте правый рычаг для ускорения</string>
+    <string name="login_tutorial_label_4">Катайтесь безопасно</string>
+    <string name="login_tutorial_body_4">Пожалуйста, не выезжайте на проезжую часть, не ускоряйтесь возле пешеходов.</string>
+    <string name="login_tutorial_label_5">Места для катания</string>
+    <string name="login_tutorial_body_5">В некоторых районах катание и парковка не разрешены. Мы покажем на карте.</string>
+    <string name="login_tutorial_label_6">Паркуйте ответственно</string>
+    <string name="login_tutorial_body_6">Пожалуйста, не блокируйте дороги и оставляйте место для пешеходов.</string>
+
+    <string name="skip">Пропустить</string>
+    <string name="next">Далее</string>
+
+
+    <string name="error_api">Произошла ошибка при подключении к серверу. Попробуйте перезапустить приложение</string>
 </resources>

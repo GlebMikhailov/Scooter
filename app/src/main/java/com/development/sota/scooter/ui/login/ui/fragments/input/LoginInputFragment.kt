@@ -15,6 +15,7 @@ import androidx.core.widget.doAfterTextChanged
 import androidx.core.widget.doOnTextChanged
 import com.development.sota.scooter.R
 import com.development.sota.scooter.databinding.FragmentLoginInputBinding
+import com.development.sota.scooter.ui.login.ui.LoginActivityView
 import moxy.MvpAppCompatFragment
 import moxy.MvpView
 import moxy.ktx.moxyPresenter
@@ -34,8 +35,8 @@ interface LoginInputView: MvpView {
     fun changeButtonRequestCodeState(enabled: Boolean, textId: Int)
 }
 
-class LoginInputFragment: MvpAppCompatFragment(), LoginInputView {
-    private val presenter by moxyPresenter { LoginInputPresenter(context ?: activity!!.applicationContext) }
+class LoginInputFragment(private val loginActivityView: LoginActivityView): MvpAppCompatFragment(), LoginInputView {
+    private val presenter by moxyPresenter { LoginInputPresenter(context ?: activity!!.applicationContext, loginActivityView) }
 
     private var _binding: FragmentLoginInputBinding? = null
     private val binding get() = _binding!!
@@ -103,6 +104,8 @@ class LoginInputFragment: MvpAppCompatFragment(), LoginInputView {
         }
 
         binding.switchLoginAgreement.setOnCheckedChangeListener { _, b -> presenter.onConfirmAgreementSwitchStateChanged(b) }
+
+        binding.buttonLoginRequestCode.setOnClickListener { presenter.onRequestCodeButtonClicked() }
 
         return binding.root
     }

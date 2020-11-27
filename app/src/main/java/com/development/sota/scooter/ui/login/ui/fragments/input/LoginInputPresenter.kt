@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import com.development.sota.scooter.R
+import com.development.sota.scooter.ui.login.ui.LoginActivityView
 import com.development.sota.scooter.ui.login.ui.LoginState
 import com.jwang123.flagkit.FlagKit
 import io.michaelrocks.libphonenumber.android.NumberParseException
@@ -12,7 +13,10 @@ import io.michaelrocks.libphonenumber.android.PhoneNumberUtil
 import moxy.MvpPresenter
 
 
-class LoginInputPresenter(val context: Context): MvpPresenter<LoginInputView>()  {
+class LoginInputPresenter(
+    private val context: Context,
+    private val loginActivityView: LoginActivityView
+    ): MvpPresenter<LoginInputView>()  {
     private var countryCode = ""
     private var phoneCandidate = ""
     private var name = ""
@@ -48,25 +52,38 @@ class LoginInputPresenter(val context: Context): MvpPresenter<LoginInputView>() 
             var state = if (currentNumber.isEmpty() || currentNumber.trim() == "+") LoginInputPhoneState.NONE else LoginInputPhoneState.GREEN
             var anyElement = false
 
-            for (region in phoneUtil.supportedRegions) {
-                var isValid: Boolean = phoneUtil.isPossibleNumber(currentNumber, region)
-                if (isValid) {
-                    val number = phoneUtil.parse(currentNumber, region)
+            if(currentNumber.length >= 7) {
+                for (region in phoneUtil.supportedRegions) {
+                    var isValid: Boolean = phoneUtil.isPossibleNumber(currentNumber, region)
+                    if (isValid) {
+                        val number = phoneUtil.parse(currentNumber, region)
 
-                    isValid = phoneUtil.isValidNumberForRegion(number, region)
+                        isValid = phoneUtil.isValidNumberForRegion(number, region)
 
-                    if (isValid && countries.contains(region.toLowerCase().trim())) {
-                        countryCode = region
-                        phoneCandidate = currentNumber
+                        if (isValid && countries.contains(region.toLowerCase().trim())) {
+                            countryCode = region
+                            phoneCandidate = currentNumber
 
-                        viewState.changeFlag(FlagKit.drawableWithFlag(context, countryCode.toLowerCase().trim()))
+                            viewState.changeFlag(
+                                FlagKit.drawableWithFlag(
+                                    context,
+                                    countryCode.toLowerCase().trim()
+                                )
+                            )
 
-                        anyElement = true
-                        break
+                            anyElement = true
+                            break
+                        }
+                    } else {
+                        countryCode = ""
+                        viewState.changeFlag(
+                            ResourcesCompat.getDrawable(
+                                context.resources,
+                                R.drawable.ic_white_circle,
+                                null
+                            )!!
+                        )
                     }
-                } else {
-                    countryCode = ""
-                    viewState.changeFlag(ResourcesCompat.getDrawable(context.resources, R.drawable.ic_white_circle, null)!!)
                 }
             }
 
@@ -99,9 +116,19 @@ class LoginInputPresenter(val context: Context): MvpPresenter<LoginInputView>() 
         onInputsChanged()
     }
 
+    fun onRequestCodeButtonClicked() {
+        val isPhoneValid: Boolean = phoneUtil.isPossibleNumber(phoneCandidate, countryCode) && phoneUtil.isValidNumberForRegion(phoneUtil.parse(phoneCandidate, countryCode), countryCode)
+        val isNameValid = name.trim().isNotEmpty()
+
+        if(isPhoneValid && isNameValid && agreementConfirmed) {
+            loginActivityView.requestCodeClicked(PhoneNumberUtil.normalizeDigitsOnly(phoneCandidate), name.trim())
+        }
+    }
+
+
     private fun onInputsChanged() {
-        var isPhoneValid: Boolean = phoneUtil.isPossibleNumber(phoneCandidate, countryCode) && phoneUtil.isValidNumberForRegion(phoneUtil.parse(phoneCandidate, countryCode), countryCode)
-        var isNameValid = name.trim().isNotEmpty()
+        val isPhoneValid: Boolean = phoneUtil.isPossibleNumber(phoneCandidate, countryCode) && phoneUtil.isValidNumberForRegion(phoneUtil.parse(phoneCandidate, countryCode), countryCode)
+        val isNameValid = name.trim().isNotEmpty()
 
         if(isPhoneValid && isNameValid && agreementConfirmed) {
             viewState.changeButtonRequestCodeState(true, R.string.login_get_code)
@@ -113,6 +140,7 @@ class LoginInputPresenter(val context: Context): MvpPresenter<LoginInputView>() 
             }
         }
     }
+
 
     fun getEditTextColor(state: LoginInputPhoneState): Int {
         return when(state) {

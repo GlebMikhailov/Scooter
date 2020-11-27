@@ -6,6 +6,7 @@
 
     <color name="white">#FFFFFF</color>
     <color name="gray">#AAAAAA</color>
+    <color name="blue_indicator">#09047E</color>
 
     <color name="background_gray">#E0E0E0</color>
     <color name="green_edit_text">#14D53D</color>

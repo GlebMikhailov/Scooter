@@ -1,9 +1,14 @@
 package com.development.sota.scooter.ui.login.ui
 
+import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import com.development.sota.scooter.MainActivity
 import com.development.sota.scooter.R
+import com.development.sota.scooter.databinding.ActivityLoginBinding
+import com.development.sota.scooter.ui.login.ui.fragments.code.LoginCodeFragment
 import com.development.sota.scooter.ui.login.ui.fragments.input.LoginInputFragment
 import moxy.MvpAppCompatActivity
 import moxy.MvpAppCompatFragment
@@ -16,50 +21,129 @@ interface LoginView : MvpView {
     fun setFragmentInput()
 
     @AddToEnd
-    fun setFragmentCode()
+    fun setFragmentCode(code: Int)
 
     @AddToEnd
     fun showToastWarning()
 
-    //TODO: Add fragment theory
+    @AddToEnd
+    fun hideInputFragment()
+
+    @AddToEnd
+    fun setLoginProgressBarVisibility(state: Boolean)
+
+    @AddToEnd
+    fun finishActivity()
+}
+
+interface LoginActivityView {
+    fun requestCodeClicked(phone: String, name: String)
+
+    fun getPhoneAndName(): Pair<String, String>
+
+    fun closeCodeFragment(result: Boolean)
 }
 
 class LoginActivity : MvpAppCompatActivity(),
-    LoginView {
+    LoginView,
+    LoginActivityView {
 
-    private val presenter: LoginPresenter by moxyPresenter { LoginPresenter() }
+    private var _binding: ActivityLoginBinding? = null
+    private val binding get() = _binding!!
+
+    private val presenter: LoginPresenter by moxyPresenter { LoginPresenter(this) }
     private var state = LoginState.INPUT
 
     private var saveInputFragment: MvpAppCompatFragment? = null
+    private var saveCodeFragment: MvpAppCompatFragment? = null
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_login)
+        _binding = ActivityLoginBinding.inflate(layoutInflater)
+
+        setContentView(binding.root)
     }
 
     override fun setFragmentInput() {
-        if(saveInputFragment == null) {
-            saveInputFragment = LoginInputFragment()
-        }
+        runOnUiThread {
+            var first = false
 
-        supportFragmentManager.beginTransaction().apply {
-            add(R.id.login_frame, saveInputFragment!!)
-        }.commitNow()
+            if (saveInputFragment == null) {
+                first = true
+                saveInputFragment = LoginInputFragment(this)
+            }
+
+            supportFragmentManager.beginTransaction().apply {
+                if(saveCodeFragment != null) {
+                    detach(saveCodeFragment!!)
+                    saveCodeFragment = null
+                }
+
+                if(first) {
+                    add(R.id.login_frame, saveInputFragment!!)
+                } else {
+                    show(saveInputFragment!!)
+                }
+
+            }.commitNow()
+        }
     }
 
-    override fun setFragmentCode() {
-        val codeFragment = Fragment()
+    override fun setFragmentCode(code: Int) {
+        runOnUiThread {
+            saveCodeFragment = LoginCodeFragment(this, code)
 
-        supportFragmentManager.beginTransaction().apply {
-            add(R.id.login_frame, codeFragment)
-        }.commitNow()
+            supportFragmentManager.beginTransaction().apply {
+                add(R.id.login_frame, saveCodeFragment!!)
+            }.commitNow()
+        }
     }
 
     override fun showToastWarning() {
-        Toast.makeText(this, getString(R.string.login_oops), Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, getString(R.string.error_api), Toast.LENGTH_SHORT).show()
+    }
+
+    override fun requestCodeClicked(phone: String, name: String) {
+        presenter.onCodeRequested(phone, name)
+    }
+
+    override fun hideInputFragment() {
+        runOnUiThread {
+            supportFragmentManager.beginTransaction()
+                .hide(saveInputFragment!!)
+                .commitNow()
+        }
+    }
+
+    override fun setLoginProgressBarVisibility(state: Boolean) {
+        runOnUiThread {
+            binding.progressBarLogin.visibility = if (state) View.VISIBLE else View.GONE
+        }
+    }
+
+    override fun getPhoneAndName(): Pair<String, String> {
+        return presenter.getPhoneAndName()
+    }
+
+    override fun closeCodeFragment(result: Boolean) {
+        presenter.onCloseCodeFragment(result)
+    }
+
+    override fun finishActivity() {
+        runOnUiThread {
+            startActivity(Intent(this, MainActivity::class.java))
+            finish()
+        }
     }
 
     override fun onBackPressed() {}
+
+    override fun onDestroy() {
+        presenter.onDestroyCalled()
+
+        super.onDestroy()
+    }
 }
 
 enum class LoginState {
