@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Scooter</string>
+
+    <string name="login_label">Введите свой номер</string>
+    <string name="login_sub_label">Мы отправим код для подтверждения номера телефона.</string>
+    <string name="login_agree">Cогласен с пользовательским соглашением</string>
+    <string name="login_get_code">Запросить код</string>
+    <string name="login_agree_and_get_code">Согласиться и запросить код</string>
+    <string name="login_oops">Что-то пошло не так. Проверьте правильность введённых данных</string>
+</resources>
