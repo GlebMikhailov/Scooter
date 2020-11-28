@@ -25,7 +25,7 @@ class LoginInteractorImpl(val presenter: LoginPresenter): LoginInteractor {
         LoginRetrofitProvider.service
             .clientLogin(phone, name).subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribeBy (onError = { presenter.gotErrorFromAPI(it.localizedMessage) }, onNext = { presenter.gotCodeFromAPI(it.code) })
+            .subscribeBy (onError = { presenter.gotErrorFromAPI(it.localizedMessage ?: "") }, onNext = { presenter.gotCodeFromAPI(it.code) })
         )
     }
 
