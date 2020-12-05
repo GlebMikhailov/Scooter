@@ -10,11 +10,13 @@ import com.development.sota.scooter.R
 import com.development.sota.scooter.databinding.ActivityLoginBinding
 import com.development.sota.scooter.ui.login.ui.fragments.code.LoginCodeFragment
 import com.development.sota.scooter.ui.login.ui.fragments.input.LoginInputFragment
+import com.development.sota.scooter.ui.login.ui.fragments.user_agreement.LoginUserAgreementFragment
 import moxy.MvpAppCompatActivity
 import moxy.MvpAppCompatFragment
 import moxy.MvpView
 import moxy.ktx.moxyPresenter
 import moxy.viewstate.strategy.alias.AddToEnd
+import java.lang.Exception
 
 interface LoginView : MvpView {
     @AddToEnd
@@ -34,6 +36,9 @@ interface LoginView : MvpView {
 
     @AddToEnd
     fun finishActivity()
+
+    @AddToEnd
+    fun notifyInputFragmentUserAgreementSuccessState()
 }
 
 interface LoginActivityView {
@@ -42,6 +47,10 @@ interface LoginActivityView {
     fun getPhoneAndName(): Pair<String, String>
 
     fun closeCodeFragment(result: Boolean)
+
+    fun userAgreementSuccess()
+
+    fun startUserAgreement()
 }
 
 class LoginActivity : MvpAppCompatActivity(),
@@ -56,6 +65,7 @@ class LoginActivity : MvpAppCompatActivity(),
 
     private var saveInputFragment: MvpAppCompatFragment? = null
     private var saveCodeFragment: MvpAppCompatFragment? = null
+    private var saveUserAgreementFragment: MvpAppCompatFragment? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -78,6 +88,11 @@ class LoginActivity : MvpAppCompatActivity(),
                 if(saveCodeFragment != null) {
                     detach(saveCodeFragment!!)
                     saveCodeFragment = null
+                }
+
+                if(saveUserAgreementFragment != null) {
+                    detach(saveUserAgreementFragment!!)
+                    saveUserAgreementFragment = null
                 }
 
                 if(first) {
@@ -137,7 +152,34 @@ class LoginActivity : MvpAppCompatActivity(),
         }
     }
 
-    override fun onBackPressed() {}
+    override fun userAgreementSuccess() {
+        presenter.userAgreementClosed()
+    }
+
+    override fun startUserAgreement() {
+        runOnUiThread {
+            saveUserAgreementFragment = LoginUserAgreementFragment(this)
+
+            supportFragmentManager.beginTransaction()
+                .apply {
+                    if(saveInputFragment != null) {
+                        hide(saveInputFragment!!)
+                    }
+
+                    add(R.id.login_frame, saveUserAgreementFragment!!)
+                }.commitNow()
+        }
+    }
+
+    override fun notifyInputFragmentUserAgreementSuccessState() {
+        try {
+            (saveInputFragment as LoginInputFragment).gotUpdateForUserAgreement(true)
+        } catch (e: Exception) {}
+    }
+
+    override fun onBackPressed() {
+        presenter.onBackPressed()
+    }
 
     override fun onDestroy() {
         presenter.onDestroyCalled()

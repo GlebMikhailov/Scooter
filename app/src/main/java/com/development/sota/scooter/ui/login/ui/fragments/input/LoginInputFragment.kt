@@ -33,6 +33,12 @@ interface LoginInputView: MvpView {
 
     @AddToEnd
     fun changeButtonRequestCodeState(enabled: Boolean, textId: Int)
+
+    @AddToEnd
+    fun setTheUserAgreementSwitchState(state: Boolean)
+
+    @AddToEnd
+    fun startUserAgreementFragment()
 }
 
 class LoginInputFragment(private val loginActivityView: LoginActivityView): MvpAppCompatFragment(), LoginInputView {
@@ -104,7 +110,7 @@ class LoginInputFragment(private val loginActivityView: LoginActivityView): MvpA
         }
 
         binding.switchLoginAgreement.setOnCheckedChangeListener { _, b -> presenter.onConfirmAgreementSwitchStateChanged(b) }
-
+        binding.viewLoginClickableUserAgreement.setOnClickListener { presenter.userAgreementFragmentRequested() }
         binding.buttonLoginRequestCode.setOnClickListener { presenter.onRequestCodeButtonClicked() }
 
         return binding.root
@@ -156,6 +162,22 @@ class LoginInputFragment(private val loginActivityView: LoginActivityView): MvpA
 
             binding.buttonLoginRequestCode.setText(textId)
         }
+    }
+
+    override fun setTheUserAgreementSwitchState(state: Boolean) {
+        activity?.runOnUiThread {
+            binding.switchLoginAgreement.isChecked = state
+        }
+    }
+
+    override fun startUserAgreementFragment() {
+        activity?.runOnUiThread {
+            loginActivityView.startUserAgreement()
+        }
+    }
+
+    fun gotUpdateForUserAgreement(state: Boolean) {
+        presenter.userAgreementNewState(state)
     }
 
     private fun getCurrentNumber(): String {

@@ -5,6 +5,7 @@ import android.util.Log
 import com.development.sota.scooter.ui.login.domain.LoginInteractor
 import com.development.sota.scooter.ui.login.domain.LoginInteractorImpl
 import moxy.MvpPresenter
+import moxy.presenterScope
 
 class LoginPresenter(val context: Context): MvpPresenter<LoginView>()  {
     private val interactor: LoginInteractor = LoginInteractorImpl(this)
@@ -53,6 +54,15 @@ class LoginPresenter(val context: Context): MvpPresenter<LoginView>()  {
 
     fun getPhoneAndName(): Pair<String, String> {
         return Pair(phone, name)
+    }
+
+    fun userAgreementClosed() {
+        viewState.notifyInputFragmentUserAgreementSuccessState()
+        viewState.setFragmentInput()
+    }
+
+    fun onBackPressed() {
+        viewState.setFragmentInput()
     }
 
     fun onDestroyCalled() {

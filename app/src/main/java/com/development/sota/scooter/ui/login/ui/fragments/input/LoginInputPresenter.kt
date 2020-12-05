@@ -125,7 +125,6 @@ class LoginInputPresenter(
         }
     }
 
-
     private fun onInputsChanged() {
         val isPhoneValid: Boolean = phoneUtil.isPossibleNumber(phoneCandidate, countryCode) && phoneUtil.isValidNumberForRegion(phoneUtil.parse(phoneCandidate, countryCode), countryCode)
         val isNameValid = name.trim().isNotEmpty()
@@ -141,6 +140,13 @@ class LoginInputPresenter(
         }
     }
 
+    fun userAgreementNewState(state: Boolean) {
+        viewState.setTheUserAgreementSwitchState(state)
+    }
+
+    fun userAgreementFragmentRequested() {
+        viewState.startUserAgreementFragment()
+    }
 
     fun getEditTextColor(state: LoginInputPhoneState): Int {
         return when(state) {
