@@ -1,13 +1,13 @@
-package com.development.sota.scooter.ui.login.ui
+package com.development.sota.scooter.ui.login.presentation
 
 import android.content.Context
 import android.util.Log
+import com.development.sota.scooter.base.BasePresenter
 import com.development.sota.scooter.ui.login.domain.LoginInteractor
 import com.development.sota.scooter.ui.login.domain.LoginInteractorImpl
 import moxy.MvpPresenter
-import moxy.presenterScope
 
-class LoginPresenter(val context: Context): MvpPresenter<LoginView>()  {
+class LoginPresenter(val context: Context): MvpPresenter<LoginView>(), BasePresenter {
     private val interactor: LoginInteractor = LoginInteractorImpl(this)
 
     private var phone = ""
@@ -65,7 +65,7 @@ class LoginPresenter(val context: Context): MvpPresenter<LoginView>()  {
         viewState.setFragmentInput()
     }
 
-    fun onDestroyCalled() {
+    override fun onDestroyCalled() {
         interactor.disposeRequests()
     }
 }

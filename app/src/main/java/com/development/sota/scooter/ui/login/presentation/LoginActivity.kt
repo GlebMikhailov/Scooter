@@ -1,16 +1,15 @@
-package com.development.sota.scooter.ui.login.ui
+package com.development.sota.scooter.ui.login.presentation
 
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
-import androidx.fragment.app.Fragment
 import com.development.sota.scooter.MainActivity
 import com.development.sota.scooter.R
 import com.development.sota.scooter.databinding.ActivityLoginBinding
-import com.development.sota.scooter.ui.login.ui.fragments.code.LoginCodeFragment
-import com.development.sota.scooter.ui.login.ui.fragments.input.LoginInputFragment
-import com.development.sota.scooter.ui.login.ui.fragments.user_agreement.LoginUserAgreementFragment
+import com.development.sota.scooter.ui.login.presentation.fragments.code.LoginCodeFragment
+import com.development.sota.scooter.ui.login.presentation.fragments.input.LoginInputFragment
+import com.development.sota.scooter.ui.login.presentation.fragments.user_agreement.LoginUserAgreementFragment
 import moxy.MvpAppCompatActivity
 import moxy.MvpAppCompatFragment
 import moxy.MvpView

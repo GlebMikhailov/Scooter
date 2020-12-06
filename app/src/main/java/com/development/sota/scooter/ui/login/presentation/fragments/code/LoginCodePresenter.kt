@@ -1,11 +1,11 @@
-package com.development.sota.scooter.ui.login.ui.fragments.code
+package com.development.sota.scooter.ui.login.presentation.fragments.code
 
 import android.content.Context
 import androidx.core.content.ContextCompat
 import com.development.sota.scooter.R
+import com.development.sota.scooter.base.BasePresenter
 import com.development.sota.scooter.ui.login.domain.LoginCodeInteractorImpl
 import com.development.sota.scooter.ui.login.domain.LoginInteractor
-import com.jwang123.flagkit.FlagKit
 import io.michaelrocks.libphonenumber.android.PhoneNumberUtil
 import moxy.MvpPresenter
 import java.util.concurrent.TimeUnit
@@ -15,7 +15,7 @@ class LoginCodePresenter(
     private val context: Context,
     private var code: Int,
     private val phoneAndName: Pair<String, String>
-    ): MvpPresenter<LoginCodeView>() {
+    ): MvpPresenter<LoginCodeView>(), BasePresenter {
     private val interactor: LoginInteractor = LoginCodeInteractorImpl(this)
     private val phoneUtil = PhoneNumberUtil.createInstance(context)
 
@@ -114,7 +114,7 @@ class LoginCodePresenter(
         viewState.closeFragment(false)
     }
 
-    fun onDestroyCalled() {
+    override fun onDestroyCalled() {
         interactor.disposeRequests()
     }
 }

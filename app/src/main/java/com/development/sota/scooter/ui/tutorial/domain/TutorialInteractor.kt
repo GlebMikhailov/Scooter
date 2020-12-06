@@ -1,9 +1,10 @@
 package com.development.sota.scooter.ui.tutorial.domain
 
 import android.content.Context
+import com.development.sota.scooter.base.BaseInteractor
 import com.development.sota.scooter.ui.tutorial.presentation.TutorialPresenter
 
-interface TutorialInteractor {
+interface TutorialInteractor: BaseInteractor {
     fun setSuccessfulFlag()
 }
 
@@ -13,4 +14,6 @@ class TutorialInteractorImpl(presenter: TutorialPresenter): TutorialInteractor {
     override fun setSuccessfulFlag() {
         sharedPreferences.edit().putBoolean("wasTutorial", true).apply()
     }
+
+    override fun disposeRequests() {}
 }

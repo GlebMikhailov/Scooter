@@ -1,9 +1,10 @@
-package com.development.sota.scooter.ui.login.ui.fragments.user_agreement
+package com.development.sota.scooter.ui.login.presentation.fragments.user_agreement
 
 import com.development.sota.scooter.R
+import com.development.sota.scooter.base.BasePresenter
 import moxy.MvpPresenter
 
-class LoginUserAgreementPresenter: MvpPresenter<LoginUserAgreement>() {
+class LoginUserAgreementPresenter: MvpPresenter<LoginUserAgreement>(), BasePresenter {
     fun onNextClicked(currentIndex: Int) {
         if(currentIndex + 1 <= 3) {
             val index = currentIndex + 1
@@ -17,4 +18,6 @@ class LoginUserAgreementPresenter: MvpPresenter<LoginUserAgreement>() {
             viewState.closeUserAgreement()
         }
     }
+
+    override fun onDestroyCalled() {}
 }

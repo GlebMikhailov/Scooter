@@ -1,4 +1,4 @@
-package com.development.sota.scooter.ui.login.ui.fragments.user_agreement
+package com.development.sota.scooter.ui.login.presentation.fragments.user_agreement
 
 import android.view.LayoutInflater
 import android.view.View

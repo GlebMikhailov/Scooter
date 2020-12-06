@@ -4,7 +4,8 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
-import com.development.sota.scooter.ui.login.ui.LoginActivity
+import com.development.sota.scooter.ui.login.presentation.LoginActivity
+import com.development.sota.scooter.ui.map.presentation.MapActivity
 import com.development.sota.scooter.ui.tutorial.presentation.TutorialActivity
 import com.microsoft.appcenter.AppCenter
 import com.microsoft.appcenter.analytics.Analytics
@@ -30,6 +31,8 @@ class MainActivity : MvpAppCompatActivity() {
             startActivity(Intent(this, LoginActivity::class.java))
         } else if(!sharedPreferences.getBoolean("wasTutorial", false)) {
             startActivity(Intent(this, TutorialActivity::class.java))
+        } else {
+            startActivity(Intent(this, MapActivity::class.java))
         }
     }
 }

@@ -1,12 +1,11 @@
-package com.development.sota.scooter.ui.login.ui.fragments.user_agreement
+package com.development.sota.scooter.ui.login.presentation.fragments.user_agreement
 
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.development.sota.scooter.databinding.FragmentLoginUserAgreementBinding
-import com.development.sota.scooter.ui.login.ui.LoginActivityView
-import com.development.sota.scooter.ui.login.ui.LoginView
+import com.development.sota.scooter.ui.login.presentation.LoginActivityView
 import moxy.MvpAppCompatFragment
 import moxy.MvpView
 import moxy.ktx.moxyPresenter

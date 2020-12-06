@@ -18,4 +18,6 @@
     <color name="sota_purple_gradient_start">#F300D8</color>
     <color name="sota_purple_gradient_end">#09047E</color>
 
+    <color name="icon_purple">#9D2CDD</color>
+
 </resources>

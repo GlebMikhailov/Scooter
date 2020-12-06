@@ -1,12 +1,11 @@
-package com.development.sota.scooter.ui.login.ui.fragments.input
+package com.development.sota.scooter.ui.login.presentation.fragments.input
 
 import android.content.Context
-import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import com.development.sota.scooter.R
-import com.development.sota.scooter.ui.login.ui.LoginActivityView
-import com.development.sota.scooter.ui.login.ui.LoginState
+import com.development.sota.scooter.base.BasePresenter
+import com.development.sota.scooter.ui.login.presentation.LoginActivityView
 import com.jwang123.flagkit.FlagKit
 import io.michaelrocks.libphonenumber.android.NumberParseException
 import io.michaelrocks.libphonenumber.android.PhoneNumberUtil
@@ -16,7 +15,7 @@ import moxy.MvpPresenter
 class LoginInputPresenter(
     private val context: Context,
     private val loginActivityView: LoginActivityView
-    ): MvpPresenter<LoginInputView>()  {
+    ): MvpPresenter<LoginInputView>(), BasePresenter {
     private var countryCode = ""
     private var phoneCandidate = ""
     private var name = ""
@@ -155,4 +154,6 @@ class LoginInputPresenter(
             LoginInputPhoneState.RED -> ContextCompat.getColor(context, R.color.red_edit_text)
         }
     }
+
+    override fun onDestroyCalled() {}
 }

@@ -1,4 +1,4 @@
-package com.development.sota.scooter
+package com.development.sota.scooter.base
 
 import android.app.Application
 

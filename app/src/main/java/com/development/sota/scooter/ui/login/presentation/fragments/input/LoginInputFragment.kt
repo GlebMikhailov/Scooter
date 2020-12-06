@@ -1,21 +1,16 @@
-package com.development.sota.scooter.ui.login.ui.fragments.input
+package com.development.sota.scooter.ui.login.presentation.fragments.input
 
-import android.annotation.SuppressLint
-import android.graphics.ColorFilter
 import android.graphics.PorterDuff
 import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat.getColor
 import androidx.core.content.ContextCompat.getDrawable
-import androidx.core.widget.addTextChangedListener
 import androidx.core.widget.doAfterTextChanged
-import androidx.core.widget.doOnTextChanged
 import com.development.sota.scooter.R
 import com.development.sota.scooter.databinding.FragmentLoginInputBinding
-import com.development.sota.scooter.ui.login.ui.LoginActivityView
+import com.development.sota.scooter.ui.login.presentation.LoginActivityView
 import moxy.MvpAppCompatFragment
 import moxy.MvpView
 import moxy.ktx.moxyPresenter

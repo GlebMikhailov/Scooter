@@ -76,6 +76,13 @@ dependencies {
     implementation "com.microsoft.appcenter:appcenter-analytics:$appCenterSdkVersion"
     implementation "com.microsoft.appcenter:appcenter-crashes:$appCenterSdkVersion"
 
+    //Maps
+    implementation 'com.google.android.libraries.maps:maps:3.1.0-beta'
+    implementation 'com.google.android.gms:play-services-gcm:17.0.0'
+    implementation 'com.google.auto.value:auto-value-annotations:1.6.2'
+    implementation 'com.google.maps.android:android-maps-utils-v3:2.0.1'
+    implementation 'com.google.maps.android:maps-v3-ktx:2.2.0'
+    implementation 'com.google.maps.android:maps-utils-v3-ktx:2.2.0'
 
     //Other
     implementation 'com.chaos.view:pinview:1.4.4'

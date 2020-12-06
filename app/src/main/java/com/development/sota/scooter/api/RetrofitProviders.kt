@@ -25,3 +25,7 @@ val retrofit: Retrofit = Retrofit.Builder()
 object LoginRetrofitProvider {
     val service: LoginService = retrofit.create(LoginService::class.java)
 }
+
+object MapRetrofitProvider {
+    val service: MapService = retrofit.create(MapService::class.java)
+}

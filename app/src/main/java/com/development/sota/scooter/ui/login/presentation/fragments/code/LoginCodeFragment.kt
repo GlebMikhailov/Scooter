@@ -1,4 +1,4 @@
-package com.development.sota.scooter.ui.login.ui.fragments.code
+package com.development.sota.scooter.ui.login.presentation.fragments.code
 
 import android.annotation.SuppressLint
 import android.graphics.Color
@@ -9,14 +9,11 @@ import android.text.style.ForegroundColorSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import android.widget.Toast
 import androidx.core.widget.doAfterTextChanged
 import com.development.sota.scooter.R
 import com.development.sota.scooter.databinding.FragmentLoginCodeBinding
-import com.development.sota.scooter.ui.login.ui.LoginActivityView
-import com.jwang123.flagkit.FlagKit
-import io.michaelrocks.libphonenumber.android.PhoneNumberUtil
+import com.development.sota.scooter.ui.login.presentation.LoginActivityView
 import moxy.MvpAppCompatFragment
 import moxy.MvpView
 import moxy.ktx.moxyPresenter

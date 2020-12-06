@@ -7,7 +7,7 @@
     android:background="@color/white"
     android:theme="@style/Theme.AppCompat.NoActionBar"
     android:animateLayoutChanges="true"
-    tools:context=".ui.login.ui.LoginActivity">
+    tools:context=".ui.login.presentation.LoginActivity">
 
     <FrameLayout
         android:id="@+id/login_frame"
