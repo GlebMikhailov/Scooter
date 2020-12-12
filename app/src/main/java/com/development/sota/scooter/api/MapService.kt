@@ -6,6 +6,6 @@ import io.reactivex.rxjava3.core.Observable
 import retrofit2.http.GET
 
 interface MapService {
-    @GET
-    fun getScooters(): Observable<ScooterResponse>
+    @GET("getScooter/")
+    fun getScooters(): Observable<List<Scooter>>
 }

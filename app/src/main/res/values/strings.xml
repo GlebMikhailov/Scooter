@@ -57,6 +57,24 @@
 
     <string name="login_user_agreement_confirm">Ознакомился и согласен</string>
 
+    <string name="qr_scanner_take_scooter">Взять самокат</string>
+    <string name="qr_scanner_hint">Наведите камеру на QR-код, или введите номер самоката</string>
+
+    <string name="drivings_label">Поездки</string>
+
+    <string name="scooter_booked">ЗАБРОНИРОВАН:</string>
+    <string name="scooter_paused">ПАУЗА:</string>
+    <string name="scooter_cancel_book">Отменить бронь</string>
+    <string name="scooter_activate">Активировать</string>
+    <string name="scooter_per_minute">в минуту</string>
+    <string name="scooter_per_hour">в час</string>
+    <string name="scooter_route">Маршрут</string>
+    <string name="scooter_minute_pricing">Поминутный</string>
+    <string name="scooter_hour_pricing">Почасовой</string>
+    <string name="scooter_pause">Пауза</string>
+    <string name="scooter_finish">Финиш</string>
+    <string name="scooter_signal">Сигнал</string>
+    <string name="scooter_open">Открыть</string>
 
     <string name="skip">Пропустить</string>
     <string name="next">Далее</string>

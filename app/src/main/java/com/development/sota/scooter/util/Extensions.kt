@@ -1,14 +1,23 @@
 package com.development.sota.scooter.util
 
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.util.Log
-import okhttp3.*
-import okhttp3.MultipartBody.Part.Companion.create
-import okio.*
+import androidx.annotation.DrawableRes
+import androidx.core.content.ContextCompat
+import com.google.android.libraries.maps.model.BitmapDescriptor
+import com.google.android.libraries.maps.model.BitmapDescriptorFactory
+import okhttp3.Interceptor
+import okhttp3.Request
+import okhttp3.Response
+import okhttp3.ResponseBody
+import okio.Buffer
 import java.lang.String
 
 
 class LoggingInterceptor : Interceptor {
-    @Throws(IOException::class)
+
     override fun intercept(chain: Interceptor.Chain): Response {
         val request: Request = chain.request()
         val t1 = System.nanoTime()
@@ -22,7 +31,7 @@ class LoggingInterceptor : Interceptor {
             )
         )
         val requestBuffer = Buffer()
-        request.body!!.writeTo(requestBuffer)
+        request.body?.writeTo(requestBuffer)
         Log.d("OkHttp", requestBuffer.readUtf8())
         val response: Response = chain.proceed(request)
         val t2 = System.nanoTime()
@@ -42,3 +51,4 @@ class LoggingInterceptor : Interceptor {
         return response.newBuilder().body(wrappedBody).build()
     }
 }
+
