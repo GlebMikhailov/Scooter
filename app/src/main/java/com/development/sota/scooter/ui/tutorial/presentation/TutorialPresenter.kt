@@ -6,11 +6,11 @@ import com.development.sota.scooter.ui.tutorial.domain.TutorialInteractor
 import com.development.sota.scooter.ui.tutorial.domain.TutorialInteractorImpl
 import moxy.MvpPresenter
 
-class TutorialPresenter(val context: Context): MvpPresenter<TutorialView>(), BasePresenter {
+class TutorialPresenter(val context: Context) : MvpPresenter<TutorialView>(), BasePresenter {
     private val interactor: TutorialInteractor = TutorialInteractorImpl(this)
 
     fun onNextButtonClicked(index: Int) {
-        if(index == 5) {
+        if (index == 5) {
             closeTutorial()
         } else {
             viewState.nextPage(index + 1)

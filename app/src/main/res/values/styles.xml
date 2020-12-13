@@ -4,7 +4,9 @@
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/white</item>
-        <item name="colorAccent">@color/colorAccent</item>
+        <item name="colorAccent">@color/icon_purple</item>
+        <item name="font">@font/roboto</item>
+        <item name="fontFamily">@font/roboto</item>
     </style>
 
     <style name="FullscreenAppTheme" parent="Theme.AppCompat.Light.NoActionBar">
@@ -23,7 +25,7 @@
         <item name="android:colorForeground">#42221f1f</item>
     </style>
 
-    <style name="GradientButton"  parent="Theme.AppCompat.Light">
+    <style name="GradientButton" parent="Theme.AppCompat.Light">
         <item name="android:background">@drawable/ic_curved_gradient</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:textSize">18sp</item>

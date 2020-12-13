@@ -9,15 +9,18 @@ import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
 import com.development.sota.scooter.R
 import com.development.sota.scooter.ui.map.data.Scooter
-import com.google.android.libraries.maps.GoogleMap
-import com.google.android.libraries.maps.model.*
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.model.BitmapDescriptor
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MarkerOptions
 import com.google.maps.android.clustering.ClusterItem
 import com.google.maps.android.clustering.ClusterManager
 import com.google.maps.android.clustering.view.DefaultClusterRenderer
 import com.google.maps.android.ui.IconGenerator
 import kotlin.math.max
 
-class ScooterClusterItem(var scooter: Scooter): ClusterItem {
+class ScooterClusterItem(var scooter: Scooter) : ClusterItem {
     override fun getSnippet(): String? {
         return ""
     }
@@ -31,7 +34,11 @@ class ScooterClusterItem(var scooter: Scooter): ClusterItem {
     }
 }
 
-class MarkerClusterRenderer(val context: Context, map: GoogleMap, clusterManager: ClusterManager<ScooterClusterItem>?):
+class MarkerClusterRenderer(
+    val context: Context,
+    map: GoogleMap,
+    clusterManager: ClusterManager<ScooterClusterItem>?
+) :
     DefaultClusterRenderer<ScooterClusterItem>(context, map, clusterManager) {
     private val MARKER_DIMENSION = 48
     private var iconGenerator: IconGenerator? = null
@@ -40,11 +47,19 @@ class MarkerClusterRenderer(val context: Context, map: GoogleMap, clusterManager
     init {
         iconGenerator = IconGenerator(context)
         markerImageView = ImageView(context)
-        markerImageView!!.setLayoutParams(ViewGroup.LayoutParams(MARKER_DIMENSION, MARKER_DIMENSION))
+        markerImageView!!.setLayoutParams(
+            ViewGroup.LayoutParams(
+                MARKER_DIMENSION,
+                MARKER_DIMENSION
+            )
+        )
         iconGenerator!!.setContentView(markerImageView)
     }
 
-    override fun onBeforeClusterItemRendered(item: ScooterClusterItem, markerOptions: MarkerOptions) {
+    override fun onBeforeClusterItemRendered(
+        item: ScooterClusterItem,
+        markerOptions: MarkerOptions
+    ) {
         super.onBeforeClusterItemRendered(item, markerOptions)
 
         markerOptions.icon(bitmapDescriptorFromVector(item.scooter.getScooterIcon()));  // 8
@@ -59,10 +74,22 @@ class MarkerClusterRenderer(val context: Context, map: GoogleMap, clusterManager
             ContextCompat.getDrawable(context, R.drawable.ic_purple_circle_with_white_corner)
 
         vectorDrawable!!.setBounds(
-            (((max(vectorDrawable.intrinsicWidth, vectorDrawable.intrinsicHeight) * 1.8).toInt() - vectorDrawable.intrinsicWidth * 1.5 ) / 1.5).toInt(),
-            (((max(vectorDrawable.intrinsicWidth, vectorDrawable.intrinsicHeight) * 1.8).toInt() - vectorDrawable.intrinsicHeight * 1.5) / 1.5).toInt(),
-            (vectorDrawable.intrinsicWidth * 1.5 + 0.5 * (max(vectorDrawable.intrinsicWidth, vectorDrawable.intrinsicHeight) * 1.8 - vectorDrawable.intrinsicWidth * 1.5) / 1.5).toInt(),
-            (vectorDrawable.intrinsicHeight * 1.5 + 0.5 * (max(vectorDrawable.intrinsicWidth, vectorDrawable.intrinsicHeight) * 1.8 - vectorDrawable.intrinsicHeight * 1.5) / 1.5).toInt()
+            (((max(
+                vectorDrawable.intrinsicWidth,
+                vectorDrawable.intrinsicHeight
+            ) * 1.8).toInt() - vectorDrawable.intrinsicWidth * 1.5) / 1.5).toInt(),
+            (((max(
+                vectorDrawable.intrinsicWidth,
+                vectorDrawable.intrinsicHeight
+            ) * 1.8).toInt() - vectorDrawable.intrinsicHeight * 1.5) / 1.5).toInt(),
+            (vectorDrawable.intrinsicWidth * 1.5 + 0.5 * (max(
+                vectorDrawable.intrinsicWidth,
+                vectorDrawable.intrinsicHeight
+            ) * 1.8 - vectorDrawable.intrinsicWidth * 1.5) / 1.5).toInt(),
+            (vectorDrawable.intrinsicHeight * 1.5 + 0.5 * (max(
+                vectorDrawable.intrinsicWidth,
+                vectorDrawable.intrinsicHeight
+            ) * 1.8 - vectorDrawable.intrinsicHeight * 1.5) / 1.5).toInt()
         )
         backgroundDrawable!!.setBounds(
             0,

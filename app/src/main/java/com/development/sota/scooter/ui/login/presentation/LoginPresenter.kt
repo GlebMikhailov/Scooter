@@ -7,11 +7,12 @@ import com.development.sota.scooter.ui.login.domain.LoginInteractor
 import com.development.sota.scooter.ui.login.domain.LoginInteractorImpl
 import moxy.MvpPresenter
 
-class LoginPresenter(val context: Context): MvpPresenter<LoginView>(), BasePresenter {
+class LoginPresenter(val context: Context) : MvpPresenter<LoginView>(), BasePresenter {
     private val interactor: LoginInteractor = LoginInteractorImpl(this)
 
     private var phone = ""
-    private var name =""
+    private var name = ""
+    private var id = -1L
 
     override fun onFirstViewAttach() {
         super.onFirstViewAttach()
@@ -30,7 +31,8 @@ class LoginPresenter(val context: Context): MvpPresenter<LoginView>(), BasePrese
         viewState.setLoginProgressBarVisibility(true)
     }
 
-    fun gotCodeFromAPI(code: Int) {
+    fun gotCodeAndIDFromAPI(code: Int, id: Long) {
+        this.id = id
         viewState.setLoginProgressBarVisibility(false)
 
         viewState.setFragmentCode(code)
@@ -44,8 +46,8 @@ class LoginPresenter(val context: Context): MvpPresenter<LoginView>(), BasePrese
     }
 
     fun onCloseCodeFragment(result: Boolean) {
-        if(result) {
-            interactor.saveCredentials(phone, name)
+        if (result) {
+            interactor.saveCredentials(phone, name, id)
             viewState.finishActivity()
         } else {
             viewState.setFragmentInput()

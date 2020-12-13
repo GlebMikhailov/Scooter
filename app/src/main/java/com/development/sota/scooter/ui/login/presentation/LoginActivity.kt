@@ -15,7 +15,6 @@ import moxy.MvpAppCompatFragment
 import moxy.MvpView
 import moxy.ktx.moxyPresenter
 import moxy.viewstate.strategy.alias.AddToEnd
-import java.lang.Exception
 
 interface LoginView : MvpView {
     @AddToEnd
@@ -84,17 +83,17 @@ class LoginActivity : MvpAppCompatActivity(),
             }
 
             supportFragmentManager.beginTransaction().apply {
-                if(saveCodeFragment != null) {
+                if (saveCodeFragment != null) {
                     detach(saveCodeFragment!!)
                     saveCodeFragment = null
                 }
 
-                if(saveUserAgreementFragment != null) {
+                if (saveUserAgreementFragment != null) {
                     detach(saveUserAgreementFragment!!)
                     saveUserAgreementFragment = null
                 }
 
-                if(first) {
+                if (first) {
                     add(R.id.login_frame, saveInputFragment!!)
                 } else {
                     show(saveInputFragment!!)
@@ -161,7 +160,7 @@ class LoginActivity : MvpAppCompatActivity(),
 
             supportFragmentManager.beginTransaction()
                 .apply {
-                    if(saveInputFragment != null) {
+                    if (saveInputFragment != null) {
                         hide(saveInputFragment!!)
                     }
 
@@ -173,7 +172,8 @@ class LoginActivity : MvpAppCompatActivity(),
     override fun notifyInputFragmentUserAgreementSuccessState() {
         try {
             (saveInputFragment as LoginInputFragment).gotUpdateForUserAgreement(true)
-        } catch (e: Exception) {}
+        } catch (e: Exception) {
+        }
     }
 
     override fun onBackPressed() {

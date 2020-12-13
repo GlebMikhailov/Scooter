@@ -16,7 +16,7 @@ import moxy.MvpView
 import moxy.ktx.moxyPresenter
 import moxy.viewstate.strategy.alias.AddToEnd
 
-interface LoginInputView: MvpView {
+interface LoginInputView : MvpView {
     @AddToEnd
     fun changeFlag(drawable: Drawable)
 
@@ -36,8 +36,13 @@ interface LoginInputView: MvpView {
     fun startUserAgreementFragment()
 }
 
-class LoginInputFragment(private val loginActivityView: LoginActivityView): MvpAppCompatFragment(), LoginInputView {
-    private val presenter by moxyPresenter { LoginInputPresenter(context ?: activity!!.applicationContext, loginActivityView) }
+class LoginInputFragment(private val loginActivityView: LoginActivityView) : MvpAppCompatFragment(),
+    LoginInputView {
+    private val presenter by moxyPresenter {
+        LoginInputPresenter(
+            context ?: activity!!.applicationContext, loginActivityView
+        )
+    }
 
     private var _binding: FragmentLoginInputBinding? = null
     private val binding get() = _binding!!
@@ -50,22 +55,25 @@ class LoginInputFragment(private val loginActivityView: LoginActivityView): MvpA
         _binding = FragmentLoginInputBinding.inflate(inflater, container, false)
 
         binding.loginPhonePinViewCode.doAfterTextChanged {
-           if(it == null || it.isEmpty()) {
-               binding.loginPhonePinViewCode.setText("+")
-           }
+            if (it == null || it.isEmpty()) {
+                binding.loginPhonePinViewCode.setText("+")
+            }
 
-           if(it!!.count() > 4) {
-               binding.loginPhonePinViewCode.text!!.removeRange(4, binding.loginPhonePinViewCode.text!!.count() - 1)
+            if (it!!.count() > 4) {
+                binding.loginPhonePinViewCode.text!!.removeRange(
+                    4,
+                    binding.loginPhonePinViewCode.text!!.count() - 1
+                )
 
-               activity!!.runOnUiThread {
-                   binding.loginPhonePinViewCodeFirstThreeNumbers.requestFocus()
-               }
-           }
+                activity!!.runOnUiThread {
+                    binding.loginPhonePinViewCodeFirstThreeNumbers.requestFocus()
+                }
+            }
 
-          presenter.onPhoneCodeChanged(getCurrentNumber())
-       }
+            presenter.onPhoneCodeChanged(getCurrentNumber())
+        }
         binding.loginPhonePinViewCodeFirstThreeNumbers.doAfterTextChanged {
-            if(it!!.count() == 3) {
+            if (it!!.count() == 3) {
                 activity!!.runOnUiThread {
                     binding.loginPhonePinViewCodeSecondThreeNumbers.requestFocus()
                 }
@@ -74,7 +82,7 @@ class LoginInputFragment(private val loginActivityView: LoginActivityView): MvpA
             presenter.onPhoneCodeChanged(getCurrentNumber())
         }
         binding.loginPhonePinViewCodeSecondThreeNumbers.doAfterTextChanged {
-            if(it!!.count() == 3) {
+            if (it!!.count() == 3) {
                 activity!!.runOnUiThread {
                     binding.loginPhonePinViewCodeFirstTwoNumbers.requestFocus()
                 }
@@ -83,7 +91,7 @@ class LoginInputFragment(private val loginActivityView: LoginActivityView): MvpA
             presenter.onPhoneCodeChanged(getCurrentNumber())
         }
         binding.loginPhonePinViewCodeFirstTwoNumbers.doAfterTextChanged {
-            if(it!!.count() == 2) {
+            if (it!!.count() == 2) {
                 activity!!.runOnUiThread {
                     binding.loginPhonePinViewCodeSecondTwoNumbers.requestFocus()
                 }
@@ -92,7 +100,7 @@ class LoginInputFragment(private val loginActivityView: LoginActivityView): MvpA
             presenter.onPhoneCodeChanged(getCurrentNumber())
         }
         binding.loginPhonePinViewCodeSecondTwoNumbers.doAfterTextChanged {
-            if(it!!.count() == 2) {
+            if (it!!.count() == 2) {
                 activity!!.runOnUiThread {
                     binding.loginNamePinInput.requestFocus()
                 }
@@ -104,7 +112,11 @@ class LoginInputFragment(private val loginActivityView: LoginActivityView): MvpA
             presenter.onNameChanged(it?.toString() ?: "")
         }
 
-        binding.switchLoginAgreement.setOnCheckedChangeListener { _, b -> presenter.onConfirmAgreementSwitchStateChanged(b) }
+        binding.switchLoginAgreement.setOnCheckedChangeListener { _, b ->
+            presenter.onConfirmAgreementSwitchStateChanged(
+                b
+            )
+        }
         binding.viewLoginClickableUserAgreement.setOnClickListener { presenter.userAgreementFragmentRequested() }
         binding.buttonLoginRequestCode.setOnClickListener { presenter.onRequestCodeButtonClicked() }
 
@@ -124,17 +136,26 @@ class LoginInputFragment(private val loginActivityView: LoginActivityView): MvpA
 
     override fun lightThePhoneView(state: LoginInputPhoneState) {
         activity?.runOnUiThread {
-            binding.loginPhonePinViewCode.background.mutate().setTint(presenter.getEditTextColor(state))
-            binding.loginPhonePinViewCodeFirstThreeNumbers.background.mutate().setTint(presenter.getEditTextColor(state))
-            binding.loginPhonePinViewCodeSecondThreeNumbers.background.mutate().setTint(presenter.getEditTextColor(state))
-            binding.loginPhonePinViewCodeFirstTwoNumbers.background.mutate().setTint(presenter.getEditTextColor(state))
-            binding.loginPhonePinViewCodeSecondTwoNumbers.background.mutate().setTint(presenter.getEditTextColor(state))
+            binding.loginPhonePinViewCode.background.mutate()
+                .setTint(presenter.getEditTextColor(state))
+            binding.loginPhonePinViewCodeFirstThreeNumbers.background.mutate()
+                .setTint(presenter.getEditTextColor(state))
+            binding.loginPhonePinViewCodeSecondThreeNumbers.background.mutate()
+                .setTint(presenter.getEditTextColor(state))
+            binding.loginPhonePinViewCodeFirstTwoNumbers.background.mutate()
+                .setTint(presenter.getEditTextColor(state))
+            binding.loginPhonePinViewCodeSecondTwoNumbers.background.mutate()
+                .setTint(presenter.getEditTextColor(state))
 
             binding.loginPhonePinViewCode.background.mutate().setTintMode(PorterDuff.Mode.SRC_ATOP)
-            binding.loginPhonePinViewCodeFirstThreeNumbers.background.mutate().setTintMode(PorterDuff.Mode.SRC_ATOP)
-            binding.loginPhonePinViewCodeSecondThreeNumbers.background.mutate().setTintMode(PorterDuff.Mode.SRC_ATOP)
-            binding.loginPhonePinViewCodeFirstTwoNumbers.background.mutate().setTintMode(PorterDuff.Mode.SRC_ATOP)
-            binding.loginPhonePinViewCodeSecondTwoNumbers.background.mutate().setTintMode(PorterDuff.Mode.SRC_ATOP)
+            binding.loginPhonePinViewCodeFirstThreeNumbers.background.mutate()
+                .setTintMode(PorterDuff.Mode.SRC_ATOP)
+            binding.loginPhonePinViewCodeSecondThreeNumbers.background.mutate()
+                .setTintMode(PorterDuff.Mode.SRC_ATOP)
+            binding.loginPhonePinViewCodeFirstTwoNumbers.background.mutate()
+                .setTintMode(PorterDuff.Mode.SRC_ATOP)
+            binding.loginPhonePinViewCodeSecondTwoNumbers.background.mutate()
+                .setTintMode(PorterDuff.Mode.SRC_ATOP)
         }
     }
 
@@ -147,12 +168,14 @@ class LoginInputFragment(private val loginActivityView: LoginActivityView): MvpA
 
     override fun changeButtonRequestCodeState(enabled: Boolean, textId: Int) {
         activity?.runOnUiThread {
-            if(enabled) {
+            if (enabled) {
                 binding.buttonLoginRequestCode.isEnabled = true
-                binding.buttonLoginRequestCode.background = getDrawable(context!!, R.drawable.ic_curved_gradient)
+                binding.buttonLoginRequestCode.background =
+                    getDrawable(context!!, R.drawable.ic_curved_gradient)
             } else {
                 binding.buttonLoginRequestCode.isEnabled = false
-                binding.buttonLoginRequestCode.background = getDrawable(context!!, R.drawable.ic_gray_corner)
+                binding.buttonLoginRequestCode.background =
+                    getDrawable(context!!, R.drawable.ic_gray_corner)
             }
 
             binding.buttonLoginRequestCode.setText(textId)

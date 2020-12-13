@@ -11,7 +11,7 @@ import moxy.ktx.moxyPresenter
 import moxy.viewstate.strategy.alias.AddToEnd
 
 
-interface TutorialView: MvpView {
+interface TutorialView : MvpView {
     @AddToEnd
     fun nextPage(index: Int)
 

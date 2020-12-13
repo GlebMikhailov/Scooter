@@ -5,13 +5,16 @@ import com.development.sota.scooter.base.BasePresenter
 import com.development.sota.scooter.ui.map.data.Scooter
 import com.development.sota.scooter.ui.map.domain.MapInteractor
 import com.development.sota.scooter.ui.map.domain.MapInteractorImpl
+import com.google.android.gms.maps.model.LatLng
 import moxy.MvpPresenter
 
-class MapPresenter: MvpPresenter<MapView>(), BasePresenter {
+class MapPresenter : MvpPresenter<MapView>(), BasePresenter {
     private val interactor: MapInteractor = MapInteractorImpl(this)
 
     private var scooters = arrayListOf<Scooter>()
+
     var locationPermissionGranted = false
+    var position: LatLng? = LatLng(44.894997, 37.316259)
 
     override fun onFirstViewAttach() {
         super.onFirstViewAttach()
@@ -36,14 +39,15 @@ class MapPresenter: MvpPresenter<MapView>(), BasePresenter {
     fun updateLocationPermission(permission: Boolean) {
         locationPermissionGranted = permission
 
-        if(locationPermissionGranted) viewState.initLocationRelationships()
+        if (locationPermissionGranted) viewState.initLocationRelationships()
     }
 
     fun markerClicked(marker: ScooterClusterItem): Boolean {
-
+        viewState.drawRoute(position!!, marker.position)
+        viewState.showScooterCard(marker.scooter)
         return true
     }
-
+    
     override fun onDestroyCalled() {
         interactor.disposeRequests()
     }

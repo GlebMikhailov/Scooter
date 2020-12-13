@@ -1,7 +1,8 @@
 package com.development.sota.scooter.ui.map.domain.entities
 
-import com.google.gson.annotations.SerializedName
 import com.squareup.moshi.Json
 
-data class OverviewPolyline(@Json(name = "points")
-                            val points: String = "")
+data class OverviewPolyline(
+    @Json(name = "points")
+    val points: String = ""
+)

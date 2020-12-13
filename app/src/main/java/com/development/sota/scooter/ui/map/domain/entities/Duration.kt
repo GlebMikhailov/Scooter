@@ -2,7 +2,9 @@ package com.development.sota.scooter.ui.map.domain.entities
 
 import com.google.gson.annotations.SerializedName
 
-data class Duration(@SerializedName("text")
-                    val text: String = "",
-                    @SerializedName("value")
-                    val value: Int = 0)
+data class Duration(
+    @SerializedName("text")
+    val text: String = "",
+    @SerializedName("value")
+    val value: Int = 0
+)

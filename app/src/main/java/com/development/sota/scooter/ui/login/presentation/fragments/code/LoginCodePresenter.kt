@@ -15,7 +15,7 @@ class LoginCodePresenter(
     private val context: Context,
     private var code: Int,
     private val phoneAndName: Pair<String, String>
-    ): MvpPresenter<LoginCodeView>(), BasePresenter {
+) : MvpPresenter<LoginCodeView>(), BasePresenter {
     private val interactor: LoginInteractor = LoginCodeInteractorImpl(this)
     private val phoneUtil = PhoneNumberUtil.createInstance(context)
 
@@ -28,7 +28,7 @@ class LoginCodePresenter(
     fun onPinEntered(pin: String) {
         val pinInt = pin.toIntOrNull()
 
-        if(pinInt == null || pinInt != code) {
+        if (pinInt == null || pinInt != code) {
             viewState.lightPinView(LoginCodeState.RED)
         } else {
             viewState.lightPinView(LoginCodeState.GREEN)
@@ -59,7 +59,7 @@ class LoginCodePresenter(
     }
 
     fun getEditTextColor(state: LoginCodeState): Int {
-        return when(state) {
+        return when (state) {
             LoginCodeState.NONE -> ContextCompat.getColor(context, R.color.gray_edit_text)
             LoginCodeState.GREEN -> ContextCompat.getColor(context, R.color.green_edit_text)
             LoginCodeState.RED -> ContextCompat.getColor(context, R.color.red_edit_text)

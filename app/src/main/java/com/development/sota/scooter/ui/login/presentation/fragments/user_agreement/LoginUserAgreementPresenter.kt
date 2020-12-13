@@ -4,12 +4,12 @@ import com.development.sota.scooter.R
 import com.development.sota.scooter.base.BasePresenter
 import moxy.MvpPresenter
 
-class LoginUserAgreementPresenter: MvpPresenter<LoginUserAgreement>(), BasePresenter {
+class LoginUserAgreementPresenter : MvpPresenter<LoginUserAgreement>(), BasePresenter {
     fun onNextClicked(currentIndex: Int) {
-        if(currentIndex + 1 <= 3) {
+        if (currentIndex + 1 <= 3) {
             val index = currentIndex + 1
 
-            if(index == 3) {
+            if (index == 3) {
                 viewState.changeConfirmButtonText(R.string.login_user_agreement_confirm)
             }
 

@@ -25,11 +25,11 @@ class MainActivity : MvpAppCompatActivity() {
         )
 
 
-        sharedPreferences = getSharedPreferences("settings", Context.MODE_PRIVATE)
+        sharedPreferences = getSharedPreferences("account", Context.MODE_PRIVATE)
 
-        if(!sharedPreferences.getBoolean("firstInit", false)) {
+        if (!sharedPreferences.getBoolean("firstInit", false)) {
             startActivity(Intent(this, LoginActivity::class.java))
-        } else if(!sharedPreferences.getBoolean("wasTutorial", false)) {
+        } else if (!sharedPreferences.getBoolean("wasTutorial", false)) {
             startActivity(Intent(this, TutorialActivity::class.java))
         } else {
             startActivity(Intent(this, MapActivity::class.java))

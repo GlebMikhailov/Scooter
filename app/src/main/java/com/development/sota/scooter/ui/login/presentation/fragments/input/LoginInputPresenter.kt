@@ -15,7 +15,7 @@ import moxy.MvpPresenter
 class LoginInputPresenter(
     private val context: Context,
     private val loginActivityView: LoginActivityView
-    ): MvpPresenter<LoginInputView>(), BasePresenter {
+) : MvpPresenter<LoginInputView>(), BasePresenter {
     private var countryCode = ""
     private var phoneCandidate = ""
     private var name = ""
@@ -48,10 +48,11 @@ class LoginInputPresenter(
 
     fun onPhoneCodeChanged(currentNumber: String) {
         try {
-            var state = if (currentNumber.isEmpty() || currentNumber.trim() == "+") LoginInputPhoneState.NONE else LoginInputPhoneState.GREEN
+            var state =
+                if (currentNumber.isEmpty() || currentNumber.trim() == "+") LoginInputPhoneState.NONE else LoginInputPhoneState.GREEN
             var anyElement = false
 
-            if(currentNumber.length >= 7) {
+            if (currentNumber.length >= 7) {
                 for (region in phoneUtil.supportedRegions) {
                     var isValid: Boolean = phoneUtil.isPossibleNumber(currentNumber, region)
                     if (isValid) {
@@ -86,7 +87,7 @@ class LoginInputPresenter(
                 }
             }
 
-            if(!anyElement) {
+            if (!anyElement) {
                 phoneCandidate = ""
                 countryCode = ""
             }
@@ -104,7 +105,11 @@ class LoginInputPresenter(
     fun onNameChanged(currentName: String) {
         name = currentName
 
-        viewState.lightTheNameView(if (currentName.trim().isEmpty()) LoginInputPhoneState.RED else LoginInputPhoneState.GREEN)
+        viewState.lightTheNameView(
+            if (currentName.trim()
+                    .isEmpty()
+            ) LoginInputPhoneState.RED else LoginInputPhoneState.GREEN
+        )
 
         onInputsChanged()
     }
@@ -116,22 +121,37 @@ class LoginInputPresenter(
     }
 
     fun onRequestCodeButtonClicked() {
-        val isPhoneValid: Boolean = phoneUtil.isPossibleNumber(phoneCandidate, countryCode) && phoneUtil.isValidNumberForRegion(phoneUtil.parse(phoneCandidate, countryCode), countryCode)
+        val isPhoneValid: Boolean = phoneUtil.isPossibleNumber(
+            phoneCandidate,
+            countryCode
+        ) && phoneUtil.isValidNumberForRegion(
+            phoneUtil.parse(phoneCandidate, countryCode),
+            countryCode
+        )
         val isNameValid = name.trim().isNotEmpty()
 
-        if(isPhoneValid && isNameValid && agreementConfirmed) {
-            loginActivityView.requestCodeClicked(PhoneNumberUtil.normalizeDigitsOnly(phoneCandidate), name.trim())
+        if (isPhoneValid && isNameValid && agreementConfirmed) {
+            loginActivityView.requestCodeClicked(
+                PhoneNumberUtil.normalizeDigitsOnly(phoneCandidate),
+                name.trim()
+            )
         }
     }
 
     private fun onInputsChanged() {
-        val isPhoneValid: Boolean = phoneUtil.isPossibleNumber(phoneCandidate, countryCode) && phoneUtil.isValidNumberForRegion(phoneUtil.parse(phoneCandidate, countryCode), countryCode)
+        val isPhoneValid: Boolean = phoneUtil.isPossibleNumber(
+            phoneCandidate,
+            countryCode
+        ) && phoneUtil.isValidNumberForRegion(
+            phoneUtil.parse(phoneCandidate, countryCode),
+            countryCode
+        )
         val isNameValid = name.trim().isNotEmpty()
 
-        if(isPhoneValid && isNameValid && agreementConfirmed) {
+        if (isPhoneValid && isNameValid && agreementConfirmed) {
             viewState.changeButtonRequestCodeState(true, R.string.login_get_code)
         } else {
-            if(agreementConfirmed) {
+            if (agreementConfirmed) {
                 viewState.changeButtonRequestCodeState(false, R.string.login_get_code)
             } else {
                 viewState.changeButtonRequestCodeState(false, R.string.login_agree_and_get_code)
@@ -148,7 +168,7 @@ class LoginInputPresenter(
     }
 
     fun getEditTextColor(state: LoginInputPhoneState): Int {
-        return when(state) {
+        return when (state) {
             LoginInputPhoneState.NONE -> ContextCompat.getColor(context, R.color.gray_edit_text)
             LoginInputPhoneState.GREEN -> ContextCompat.getColor(context, R.color.green_edit_text)
             LoginInputPhoneState.RED -> ContextCompat.getColor(context, R.color.red_edit_text)

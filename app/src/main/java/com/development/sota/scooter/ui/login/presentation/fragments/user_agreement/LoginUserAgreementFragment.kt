@@ -11,7 +11,7 @@ import moxy.MvpView
 import moxy.ktx.moxyPresenter
 import moxy.viewstate.strategy.alias.AddToEnd
 
-interface LoginUserAgreement: MvpView {
+interface LoginUserAgreement : MvpView {
     @AddToEnd
     fun changeConfirmButtonText(resId: Int)
 
@@ -22,7 +22,8 @@ interface LoginUserAgreement: MvpView {
     fun closeUserAgreement()
 }
 
-class LoginUserAgreementFragment(private val loginView: LoginActivityView): MvpAppCompatFragment(), LoginUserAgreement {
+class LoginUserAgreementFragment(private val loginView: LoginActivityView) : MvpAppCompatFragment(),
+    LoginUserAgreement {
     private val presenter by moxyPresenter { LoginUserAgreementPresenter() }
 
     private var _binding: FragmentLoginUserAgreementBinding? = null

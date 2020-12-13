@@ -53,3 +53,7 @@ object MapRetrofitProvider {
 object DirectionsRetrofitProvider {
     val service: DirectionsService = directionsRetrofit.create(DirectionsService::class.java)
 }
+
+object OrdersRetrofitProvider {
+    val service: OrderService = retrofit.create(OrderService::class.java)
+}

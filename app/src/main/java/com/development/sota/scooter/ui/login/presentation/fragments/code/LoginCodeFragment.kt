@@ -75,7 +75,8 @@ class LoginCodeFragment(
 
         binding.buttonLoginRequestCodeAgain.setOnClickListener { presenter.onRequestCodeAgainButtonClicked() }
         binding.imageButtonLoginCodeBackButton.setOnClickListener { presenter.closeCodeFragmentByUser() }
-        binding.textViewLoginCodeSublabel.text = getString(R.string.login_input_code) + " " + presenter.getFormattedPhoneString()
+        binding.textViewLoginCodeSublabel.text =
+            getString(R.string.login_input_code) + " " + presenter.getFormattedPhoneString()
 
         return binding.root
     }

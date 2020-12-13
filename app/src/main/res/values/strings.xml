@@ -61,6 +61,10 @@
     <string name="qr_scanner_hint">Наведите камеру на QR-код, или введите номер самоката</string>
 
     <string name="drivings_label">Поездки</string>
+    <string name="drivings_input_code">Ввести номер самоката</string>
+    <string name="drivings_inpit_hint">Вы можете найти его на передней панели самоката</string>
+    <string name="drivings_active">Активные</string>
+    <string name="drivings_history">История</string>
 
     <string name="scooter_booked">ЗАБРОНИРОВАН:</string>
     <string name="scooter_paused">ПАУЗА:</string>
@@ -75,6 +79,16 @@
     <string name="scooter_finish">Финиш</string>
     <string name="scooter_signal">Сигнал</string>
     <string name="scooter_open">Открыть</string>
+    <string name="scooter_first_book">Забронировать</string>
+    
+    <string name="menu_profile">Профиль</string>
+    <string name="menu_purse">Кошелёк</string>
+    <string name="menu_drivings">Поездки</string>
+    <string name="menu_promo">Промокод</string>
+    <string name="menu_learn">Обучение</string>
+    <string name="menu_help">Помощь</string>
+    <string name="menu_greeting">Привет, мы рады видеть тебя!</string>
+    <string name="menu_balance">Баланс:</string>
 
     <string name="skip">Пропустить</string>
     <string name="next">Далее</string>

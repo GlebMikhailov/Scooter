@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+
+    <ImageButton
+        android:id="@+id/imageButtonDrivingsListBack"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:background="#00FFFFFF"
+        android:padding="8dp"
+        app:layout_constraintBottom_toBottomOf="@+id/textViewDrivingsListLabel"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/textViewDrivingsListLabel"
+        app:srcCompat="@drawable/ic_back_arrow" />
+
+    <TextView
+        android:id="@+id/textViewDrivingsListLabel"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="48dp"
+        android:layout_marginEnd="16dp"
+        android:text="@string/drivings_label"
+        android:textAlignment="center"
+        android:textColor="#000000"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <segmented_control.widget.custom.android.com.segmentedcontrol.SegmentedControl
+        android:id="@+id/segmentedControlDrivingsList"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textViewDrivingsListLabel"
+        app:segments="@array/drivings_segments"
+        app:selectedTextColor="@color/white"
+        app:selectedBackgroundColor="@color/icon_purple"
+        app:unSelectedTextColor="@color/icon_purple"
+        app:unSelectedBackgroundColor="@color/white" />
+
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/viewPager2DrivingsList"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/segmentedControlDrivingsList">
+
+    </androidx.viewpager2.widget.ViewPager2>
+
+    <ProgressBar
+        android:id="@+id/progressBarDrivingsList"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:saveEnabled="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

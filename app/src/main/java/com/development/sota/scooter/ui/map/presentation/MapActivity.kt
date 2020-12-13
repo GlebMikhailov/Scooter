@@ -2,32 +2,44 @@ package com.development.sota.scooter.ui.map.presentation
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.os.Bundle
 import android.util.Log
+import android.view.Gravity
+import android.view.View
 import androidx.annotation.DrawableRes
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.view.GravityCompat
+import com.akexorcist.googledirection.DirectionCallback
+import com.akexorcist.googledirection.GoogleDirection
+import com.akexorcist.googledirection.constant.TransportMode.WALKING
+import com.akexorcist.googledirection.model.Direction
+import com.development.sota.scooter.BASE_IMAGE_URL
+import com.development.sota.scooter.GOOGLE_API_KEY
 import com.development.sota.scooter.R
+import com.development.sota.scooter.databinding.ActivityMapBinding
+import com.development.sota.scooter.ui.drivings.DrivingsActivity
+import com.development.sota.scooter.ui.drivings.DrivingsStartTarget
 import com.development.sota.scooter.ui.map.data.Scooter
 import com.google.android.gms.common.api.GoogleApiClient
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
-import com.google.android.libraries.maps.CameraUpdateFactory
-import com.google.android.libraries.maps.GoogleMap
-import com.google.android.libraries.maps.SupportMapFragment
-import com.google.android.libraries.maps.model.*
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.*
 import com.google.maps.android.clustering.ClusterManager
-import com.google.maps.android.clustering.view.ClusterRenderer
-import com.google.maps.android.ktx.addMarker
+import com.squareup.picasso.Picasso
+import kotlinx.android.synthetic.main.item_scooter_driving.view.*
 import moxy.MvpAppCompatActivity
 import moxy.MvpView
+import moxy.ViewStateProvider
 import moxy.ktx.moxyPresenter
 import moxy.viewstate.strategy.alias.AddToEnd
-import kotlin.math.max
-
 
 interface MapView : MvpView {
     @AddToEnd
@@ -35,30 +47,68 @@ interface MapView : MvpView {
 
     @AddToEnd
     fun initLocationRelationships()
+
+    @AddToEnd
+    fun drawRoute(origin: LatLng, destination: LatLng)
+
+    @AddToEnd
+    fun showScooterCard(scooter: Scooter)
 }
 
 class MapActivity : MvpAppCompatActivity(), MapView {
-
-    //private var _binding: ActivityMapBinding? = null
-    //private val binding get() = _binding!!
+    private var _binding: ActivityMapBinding? = null
+    private val binding get() = _binding!!
 
     private val presenter by moxyPresenter { MapPresenter() }
     private lateinit var supportMapFragment: SupportMapFragment
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
     private lateinit var map: GoogleMap
     private lateinit var clusterManager: ClusterManager<ScooterClusterItem>
-    private lateinit var googleApi: GoogleApiClient
     private val scooterMarkers = hashMapOf<Long, ScooterClusterItem>() // ID: Marker
+    private var myMarker: Marker? = null
 
     @SuppressLint("UseCompatLoadingForDrawables")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        //_binding = ActivityMapBinding.inflate(layoutInflater)
-        setContentView(R.layout.activity_map)
+
+        _binding = ActivityMapBinding.inflate(layoutInflater)
+
+        setContentView(binding.root)
 
         getLocationPermission()
         initLocationRelationships()
-        
+
+        binding.contentOfMap.mapScooterItem.cardViewScooterItem.visibility = View.GONE
+        binding.contentOfMap.imageButtonMapQr.setOnClickListener {
+            if (ActivityCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.CAMERA
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
+                val intent = Intent(this, DrivingsActivity::class.java)
+                intent.putExtra("aim", DrivingsStartTarget.QRandCode)
+
+                startActivity(intent)
+            } else {
+                getCameraPermission()
+            }
+        }
+
+        binding.contentOfMap.imageButtonMapMenu.setOnClickListener {
+            binding.drawerLayout.openDrawer(GravityCompat.START)
+        }
+
+        binding.contentOfMap.imageButtonMapLocation.setOnClickListener {
+            if (ActivityCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
+                initLocationRelationships()
+            } else {
+                getLocationPermission()
+            }
+        }
 
         fusedLocationProviderClient = FusedLocationProviderClient(this)
         supportMapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
@@ -72,6 +122,8 @@ class MapActivity : MvpAppCompatActivity(), MapView {
             clusterManager.setOnClusterItemClickListener { presenter.markerClicked(it) }
 
             googleMap.setOnCameraIdleListener(clusterManager)
+
+            googleMap.setOnMapClickListener { binding.contentOfMap.mapScooterItem.cardViewScooterItem.visibility = View.GONE }
 
             for (scooter in scooters) {
                 scooterMarkers[scooter.id] = ScooterClusterItem(scooter)
@@ -120,6 +172,22 @@ class MapActivity : MvpAppCompatActivity(), MapView {
         }
     }
 
+    private fun getCameraPermission() {
+        if (ContextCompat.checkSelfPermission(
+                this.applicationContext,
+                Manifest.permission.CAMERA
+            )
+            == PackageManager.PERMISSION_GRANTED
+        ) {
+            presenter.updateLocationPermission(true)
+        } else {
+            ActivityCompat.requestPermissions(
+                this, arrayOf(Manifest.permission.CAMERA),
+                PERMISSIONS_REQUEST_ACCESS_CAMERA
+            )
+        }
+    }
+
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -134,6 +202,17 @@ class MapActivity : MvpAppCompatActivity(), MapView {
                     presenter.updateLocationPermission(true)
                 }
             }
+
+            PERMISSIONS_REQUEST_ACCESS_CAMERA -> {
+                if (grantResults.isNotEmpty()
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED
+                ) {
+                    val intent = Intent(this, DrivingsActivity::class.java)
+                    intent.putExtra("aim", DrivingsStartTarget.QRandCode)
+
+                    startActivity(intent)
+                }
+            }
         }
     }
 
@@ -146,25 +225,37 @@ class MapActivity : MvpAppCompatActivity(), MapView {
             ) {
                 try {
                     LocationServices.getFusedLocationProviderClient(this).lastLocation.addOnSuccessListener {
-                            val latLng = LatLng(it.latitude, it.longitude)
+                        val latLng = LatLng(it.latitude, it.longitude)
+                        //presenter.position = latLng
 
-                            map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 10f))
+                        map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 13f))
+
+                        if(myMarker != null) {
+                            myMarker!!.remove()
                         }
 
-                    map.isMyLocationEnabled = true
-                    map.uiSettings.isMyLocationButtonEnabled = true
+                        myMarker = map.addMarker(MarkerOptions().position(latLng))
+                    }
 
                     map.setOnMyLocationButtonClickListener {
                         LocationServices.getFusedLocationProviderClient(this).lastLocation.addOnSuccessListener {
-                                try {
-                                        val latLng = LatLng(
-                                            it.latitude,
-                                            it.longitude
-                                        )
+                            try {
+                                val latLng = LatLng(
+                                    it.latitude,
+                                    it.longitude
+                                )
+                                //presenter.position = latLng
 
-                                        map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 10f))
-                                } catch (e: Exception) {}
+                                if(myMarker != null) {
+                                    myMarker!!.remove()
+                                }
+
+                                myMarker = map.addMarker(MarkerOptions().position(latLng))
+
+                                map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 13f))
+                            } catch (e: Exception) {
                             }
+                        }
 
                         return@setOnMyLocationButtonClickListener true
                     }
@@ -175,45 +266,63 @@ class MapActivity : MvpAppCompatActivity(), MapView {
         }
     }
 
-    //TODO: Recalculate without mistakes!
-    fun bitmapDescriptorFromVector(
-        @DrawableRes vectorResId: Int
-    ): BitmapDescriptor? {
-        val vectorDrawable = ContextCompat.getDrawable(this, vectorResId)
-        val backgroundDrawable =
-            ContextCompat.getDrawable(this, R.drawable.ic_purple_circle_with_white_corner)
+    override fun drawRoute(origin: LatLng, destination: LatLng) {
+        GoogleDirection.withServerKey(GOOGLE_API_KEY)
+            .from(LatLng(origin.latitude, origin.longitude))
+            .to(
+                LatLng(
+                    destination.latitude,
+                    destination.longitude
+                )
+            )
+            .transportMode(WALKING)
+            .execute(
+                object : DirectionCallback {
+                    override fun onDirectionSuccess(direction: Direction?) {
+                        Log.w("Route got", direction?.status ?: "")
+                        if (direction != null && direction.isOK) {
 
-        vectorDrawable!!.setBounds(
-            (((max(vectorDrawable.intrinsicWidth, vectorDrawable.intrinsicHeight) * 1.8).toInt() - vectorDrawable.intrinsicWidth * 1.5 ) / 1.5).toInt(),
-            (((max(vectorDrawable.intrinsicWidth, vectorDrawable.intrinsicHeight) * 1.8).toInt() - vectorDrawable.intrinsicHeight * 1.5) / 1.5).toInt(),
-            (vectorDrawable.intrinsicWidth * 1.5 + 0.5 * (max(vectorDrawable.intrinsicWidth, vectorDrawable.intrinsicHeight) * 1.8 - vectorDrawable.intrinsicWidth * 1.5) / 1.5).toInt(),
-            (vectorDrawable.intrinsicHeight * 1.5 + 0.5 * (max(vectorDrawable.intrinsicWidth, vectorDrawable.intrinsicHeight) * 1.8 - vectorDrawable.intrinsicHeight * 1.5) / 1.5).toInt()
-        )
-        backgroundDrawable!!.setBounds(
-            0,
-            0,
-            (max(vectorDrawable.intrinsicWidth, vectorDrawable.intrinsicHeight) * 1.8).toInt(),
-            (max(vectorDrawable.intrinsicWidth, vectorDrawable.intrinsicHeight) * 1.8).toInt()
-        )
+                            val polyline = PolylineOptions()
+                                .addAll(direction.routeList.first()!!.overviewPolyline.pointList.map {
+                                    LatLng(
+                                        it.latitude,
+                                        it.longitude
+                                    )
+                                })
 
-        val bitmap = Bitmap.createBitmap(
-            (max(vectorDrawable.intrinsicWidth, vectorDrawable.intrinsicHeight) * 1.8).toInt(),
-            (max(vectorDrawable.intrinsicWidth, vectorDrawable.intrinsicHeight) * 1.8).toInt(),
-            Bitmap.Config.ARGB_8888
-        )
+                            runOnUiThread {
+                                map.addPolyline(polyline)
+                            }
+                        }
+                    }
 
-        val canvas = Canvas(bitmap)
+                    override fun onDirectionFailure(t: Throwable) {
+                        Log.w("Route exception", t.localizedMessage)
+                    }
+                }
+            )
 
-        backgroundDrawable.draw(canvas)
-        vectorDrawable.draw(canvas)
+    }
 
-        return BitmapDescriptorFactory.fromBitmap(bitmap)
+    override fun showScooterCard(scooter: Scooter) {
+        runOnUiThread {
+            binding.contentOfMap.mapScooterItem.cardViewScooterItem.visibility = View.VISIBLE
+
+            binding.contentOfMap.mapScooterItem.cardViewScooterItem.linnearLayoutScooterItemFinishButtons.visibility = View.INVISIBLE
+            binding.contentOfMap.mapScooterItem.cardViewScooterItem.linnearLayoutScooterItemBookingButtons.visibility = View.INVISIBLE
+            binding.contentOfMap.mapScooterItem.cardViewScooterItem.linnearLayoutScooterItemRentButtons.visibility = View.INVISIBLE
+            binding.contentOfMap.mapScooterItem.cardViewScooterItem.textViewItemScooterId.text = "#${scooter.id}"
+            binding.contentOfMap.mapScooterItem.cardViewScooterItem.textViewItemScooterBatteryPercent.text = scooter.getBatteryPercentage()
+
+            Picasso.get().load(BASE_IMAGE_URL + scooter.photo).into(binding.contentOfMap.mapScooterItem.cardViewScooterItem.imageViewScooterItemIcon)
+        }
     }
 
     override fun onBackPressed() {}
 
     companion object {
         const val PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 99
+        const val PERMISSIONS_REQUEST_ACCESS_CAMERA = 100
     }
 }
 

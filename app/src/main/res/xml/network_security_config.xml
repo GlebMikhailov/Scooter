@@ -3,4 +3,7 @@
     <domain-config cleartextTrafficPermitted="true">
         <domain includeSubdomains="true">62.109.27.98</domain>
     </domain-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">scooteradminpanel.ru</domain>
+    </domain-config>
 </network-security-config>

@@ -1,25 +1,8 @@
 package com.development.sota.scooter.ui.map.data
 
 import com.development.sota.scooter.R
-import com.development.sota.scooter.api.Wrapped
-import com.google.android.libraries.maps.model.LatLng
-import com.squareup.moshi.FromJson
+import com.google.android.gms.maps.model.LatLng
 import com.squareup.moshi.Json
-import com.squareup.moshi.ToJson
-
-
-class ScootersJsonConverter {
-    @Wrapped
-    @FromJson
-    fun fromJson(json: ScooterResponse): List<Scooter> {
-        return json.data
-    }
-
-    @ToJson
-    fun toJson(@Wrapped value: List<Scooter?>?): ScooterResponse {
-        throw UnsupportedOperationException()
-    }
-}
 
 
 data class Scooter(
@@ -40,7 +23,7 @@ data class Scooter(
 ) {
     fun getScooterIcon(): Int {
         return when {
-            battery <= 20000.0 ->  R.drawable.ic_icon_scooter_third
+            battery <= 20000.0 -> R.drawable.ic_icon_scooter_third
             battery in 20000.0..40000.00 -> R.drawable.ic_icon_scooter_second
             else -> R.drawable.ic_icon_scooter_first
         }
@@ -49,6 +32,23 @@ data class Scooter(
     fun getLatLng(): LatLng {
         return LatLng(latitude, longitude)
     }
+
+    fun getBatteryPercentage(): String {
+        val percents = battery / 60000 * 100
+
+        return "${percents.toInt()} %"
+    }
 }
 
 data class ScooterResponse(val data: List<Scooter>)
+
+/**
+ *  ('ON', 'Online'),
+ *  ('UR', 'Under repair'),
+ *  ('RT', 'Rented'),
+ *  ('BK', 'Booked')
+ * */
+
+enum class ScooterStatus(val value: String) {
+    ONLINE("ON"), UNDER_REPAIR("UR"), RENTED("RT"), BOOKED("BK")
+}
