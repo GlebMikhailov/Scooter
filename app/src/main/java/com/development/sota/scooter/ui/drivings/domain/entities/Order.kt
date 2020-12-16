@@ -2,7 +2,7 @@ package com.development.sota.scooter.ui.drivings.domain.entities
 
 import android.annotation.SuppressLint
 import com.development.sota.scooter.ui.map.data.Scooter
-import com.development.sota.scooter.ui.map.domain.entities.Rate
+
 import com.squareup.moshi.Json
 import java.text.SimpleDateFormat
 import java.util.*
@@ -14,7 +14,7 @@ data class Order(
     @Json(name = "finish_time") val finishTime: String,
     val scooter: Scooter,
     val cost: Int,
-    val rate: Rate?
+    //val rate: Rate?
 ) {
     companion object {
         @SuppressLint("ConstantLocale")
@@ -29,8 +29,7 @@ data class Order(
                     timeFormatter.format(GregorianCalendar.getInstance().time),
                     timeFormatter.format(GregorianCalendar.getInstance().time),
                     scooter,
-                    1,
-                null
+                    1
                 )
         }
     }

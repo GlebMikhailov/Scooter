@@ -1,7 +1,7 @@
 package com.development.sota.scooter.ui.map.data
 
 import com.development.sota.scooter.R
-import com.google.android.gms.maps.model.LatLng
+import com.mapbox.mapboxsdk.geometry.LatLng
 import com.squareup.moshi.Json
 
 

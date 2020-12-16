@@ -7,6 +7,7 @@ import android.os.Bundle
 import com.development.sota.scooter.ui.login.presentation.LoginActivity
 import com.development.sota.scooter.ui.map.presentation.MapActivity
 import com.development.sota.scooter.ui.tutorial.presentation.TutorialActivity
+import com.mapbox.mapboxsdk.Mapbox
 import com.microsoft.appcenter.AppCenter
 import com.microsoft.appcenter.analytics.Analytics
 import com.microsoft.appcenter.crashes.Crashes
@@ -23,7 +24,6 @@ class MainActivity : MvpAppCompatActivity() {
             application, "0a591f1a-d402-4b85-be43-57d7c041228a",
             Analytics::class.java, Crashes::class.java
         )
-
 
         sharedPreferences = getSharedPreferences("account", Context.MODE_PRIVATE)
 

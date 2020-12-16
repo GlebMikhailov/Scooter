@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">Scooter</string>
+    <string name="mabox_access_token">pk.eyJ1Ijoia25lbWkiLCJhIjoiY2p0eGF2MnkwMHg4aTQ0cGxxNmppZG51ZyJ9.sizEB0ZAWhpulsFUFhGVFw</string>
 
     <string name="login_label">Введите свой номер</string>
     <string name="login_sub_label">Мы отправим код для подтверждения номера телефона.</string>

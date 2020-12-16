@@ -4,52 +4,62 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
-import android.graphics.Canvas
+import android.graphics.*
 import android.os.Bundle
 import android.util.Log
-import android.view.Gravity
 import android.view.View
 import androidx.annotation.DrawableRes
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
-import com.akexorcist.googledirection.DirectionCallback
-import com.akexorcist.googledirection.GoogleDirection
-import com.akexorcist.googledirection.constant.TransportMode.WALKING
-import com.akexorcist.googledirection.model.Direction
 import com.development.sota.scooter.BASE_IMAGE_URL
-import com.development.sota.scooter.GOOGLE_API_KEY
 import com.development.sota.scooter.R
 import com.development.sota.scooter.databinding.ActivityMapBinding
 import com.development.sota.scooter.ui.drivings.DrivingsActivity
 import com.development.sota.scooter.ui.drivings.DrivingsStartTarget
 import com.development.sota.scooter.ui.map.data.Scooter
-import com.google.android.gms.common.api.GoogleApiClient
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
-import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.*
-import com.google.maps.android.clustering.ClusterManager
+import com.mapbox.core.constants.Constants
+import com.mapbox.geojson.Feature
+import com.mapbox.geojson.FeatureCollection
+import com.mapbox.geojson.LineString
+import com.mapbox.geojson.Point
+import com.mapbox.mapboxsdk.Mapbox
+import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
+import com.mapbox.mapboxsdk.geometry.LatLng
+import com.mapbox.mapboxsdk.geometry.LatLngBounds
+import com.mapbox.mapboxsdk.maps.MapboxMap
+import com.mapbox.mapboxsdk.maps.Style
+import com.mapbox.mapboxsdk.plugins.localization.LocalizationPlugin
+import com.mapbox.mapboxsdk.plugins.markerview.MarkerView
+import com.mapbox.mapboxsdk.plugins.markerview.MarkerViewManager
+import com.mapbox.mapboxsdk.style.expressions.Expression.*
+import com.mapbox.mapboxsdk.style.layers.CircleLayer
+import com.mapbox.mapboxsdk.style.layers.LineLayer
+import com.mapbox.mapboxsdk.style.layers.Property
+import com.mapbox.mapboxsdk.style.layers.PropertyFactory.*
+import com.mapbox.mapboxsdk.style.layers.SymbolLayer
+import com.mapbox.mapboxsdk.style.sources.GeoJsonOptions
+import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.item_scooter_driving.view.*
 import moxy.MvpAppCompatActivity
 import moxy.MvpView
-import moxy.ViewStateProvider
 import moxy.ktx.moxyPresenter
 import moxy.viewstate.strategy.alias.AddToEnd
+import timber.log.Timber
+
 
 interface MapView : MvpView {
     @AddToEnd
-    fun updateScooterMarkers(scooters: ArrayList<Scooter>)
+    fun updateScooterMarkers(scootersFeatures: List<Feature>)
 
     @AddToEnd
     fun initLocationRelationships()
 
     @AddToEnd
-    fun drawRoute(origin: LatLng, destination: LatLng)
+    fun drawRoute(polyline: String)
 
     @AddToEnd
     fun showScooterCard(scooter: Scooter)
@@ -59,25 +69,26 @@ class MapActivity : MvpAppCompatActivity(), MapView {
     private var _binding: ActivityMapBinding? = null
     private val binding get() = _binding!!
 
-    private val presenter by moxyPresenter { MapPresenter() }
-    private lateinit var supportMapFragment: SupportMapFragment
+    private val presenter by moxyPresenter { MapPresenter(this) }
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
-    private lateinit var map: GoogleMap
-    private lateinit var clusterManager: ClusterManager<ScooterClusterItem>
-    private val scooterMarkers = hashMapOf<Long, ScooterClusterItem>() // ID: Marker
-    private var myMarker: Marker? = null
+    private var map: MapboxMap? = null
+    private lateinit var markerManager: MarkerViewManager
+    private lateinit var localizationPlugin: LocalizationPlugin
+    private var myMarker: MarkerView? = null
+    private lateinit var geoJsonSource: GeoJsonSource
+
+    private var currentShowingScooter = -1L
 
     @SuppressLint("UseCompatLoadingForDrawables")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Mapbox.getInstance(this, getString(R.string.mabox_access_token))
 
         _binding = ActivityMapBinding.inflate(layoutInflater)
 
         setContentView(binding.root)
-
-        getLocationPermission()
-        initLocationRelationships()
-
+        
+       
         binding.contentOfMap.mapScooterItem.cardViewScooterItem.visibility = View.GONE
         binding.contentOfMap.imageButtonMapQr.setOnClickListener {
             if (ActivityCompat.checkSelfPermission(
@@ -111,47 +122,159 @@ class MapActivity : MvpAppCompatActivity(), MapView {
         }
 
         fusedLocationProviderClient = FusedLocationProviderClient(this)
-        supportMapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
 
-        supportMapFragment.getMapAsync { googleMap ->
-            googleMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.map_style))
-            val scooters = presenter.getScooters()
+        binding.contentOfMap.mapView.getMapAsync { map ->
+            this.map = map
+            map.setStyle(Style.LIGHT) { style ->
 
-            clusterManager = ClusterManager(this, googleMap)
-            clusterManager.renderer = MarkerClusterRenderer(this, googleMap, clusterManager)
-            clusterManager.setOnClusterItemClickListener { presenter.markerClicked(it) }
+                style.addImageAsync(
+                    SCOOTERS_ICON_THIRD,
+                    bitmapIconFromVector(R.drawable.ic_icon_scooter_third)
+                )
+                style.addImageAsync(
+                    SCOOTERS_ICON_SECOND,
+                    bitmapIconFromVector(R.drawable.ic_icon_scooter_second)
+                )
+                style.addImageAsync(
+                    SCOOTERS_ICON_FIRST,
+                    bitmapIconFromVector(R.drawable.ic_icon_scooter_first)
+                )
+                style.addImage(
+                    MY_MARKER_IMAGE, BitmapFactory.decodeResource(
+                        resources,
+                        R.drawable.mapbox_marker_icon_default
+                    )
+                )
 
-            googleMap.setOnCameraIdleListener(clusterManager)
-
-            googleMap.setOnMapClickListener { binding.contentOfMap.mapScooterItem.cardViewScooterItem.visibility = View.GONE }
-
-            for (scooter in scooters) {
-                scooterMarkers[scooter.id] = ScooterClusterItem(scooter)
-
-                clusterManager.addItem(scooterMarkers[scooter.id])
+                localizationPlugin = LocalizationPlugin(binding.contentOfMap.mapView, map, style)
+                localizationPlugin.matchMapLanguageWithDeviceDefault()
             }
 
-            clusterManager.cluster()
+            markerManager = MarkerViewManager(binding.contentOfMap.mapView, map)
 
-            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(44.894, 37.316), 8f))
-            map = googleMap
+            map.addOnMapClickListener {
+                binding.contentOfMap.mapScooterItem.cardViewScooterItem.visibility = View.GONE;
+
+                val pointf: PointF = map.projection.toScreenLocation(it)
+                val rectF = RectF(pointf.x - 10, pointf.y - 10, pointf.x + 10, pointf.y + 10)
+                val mapClickFeatureList: List<Feature> =
+                    map.queryRenderedFeatures(rectF, CIRCLES_LAYER)
+
+                val mapClickScootersList = map.queryRenderedFeatures(rectF, SCOOTERS_LAYER)
+
+                if (mapClickFeatureList.isNotEmpty()) {
+                    val clusterLeavesFeatureCollection: FeatureCollection = geoJsonSource.getClusterLeaves(
+                        mapClickFeatureList[0],
+                        8000, 0
+                    )
+                    moveCameraToLeavesBounds(clusterLeavesFeatureCollection)
+                }
+
+                if(currentShowingScooter == -1L && mapClickScootersList.size == 1) {
+                    val scooter = mapClickScootersList.first().getProperty("id").asLong
+
+                    presenter.clickedOnScooterWith(id = scooter)
+                } else {
+                    currentShowingScooter = -1L
+
+                    map.style?.removeLayer(ROUTE_LAYER)
+                    map.style?.removeSource(ROUTE_SOURCE)
+                }
+
+                return@addOnMapClickListener true
+            }
+
+
+            map.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(44.894, 37.316), 8.0))
+        }
+
+        getLocationPermission()
+        initLocationRelationships()
+
+    }
+
+    private fun moveCameraToLeavesBounds(featureCollectionToInspect: FeatureCollection) {
+        val latLngList: MutableList<LatLng> = ArrayList()
+        if (featureCollectionToInspect.features() != null) {
+            for (singleClusterFeature in featureCollectionToInspect.features()!!) {
+                val clusterPoint: Point? = singleClusterFeature.geometry() as Point?
+
+                if (clusterPoint != null) {
+                    latLngList.add(LatLng(clusterPoint.latitude(), clusterPoint.longitude()))
+                }
+            }
+            if (latLngList.size > 1) {
+                val latLngBounds = LatLngBounds.Builder()
+                    .includes(latLngList)
+                    .build()
+                map?.easeCamera(
+                    CameraUpdateFactory.newLatLngBounds(latLngBounds, 230),
+                    1300
+                )
+            }
         }
     }
 
-    @SuppressLint("UseCompatLoadingForDrawables")
-    override fun updateScooterMarkers(scooters: ArrayList<Scooter>) {
+    @SuppressLint("UseCompatLoadingForDrawables", "TimberArgCount")
+    override fun updateScooterMarkers(scootersFeatures: List<Feature>) {
         runOnUiThread {
-            Log.w("SCOOTERS", scooters.toString())
-            for (scooter in scooters) {
-                if (scooter.id in scooterMarkers.keys) {
-                    scooterMarkers[scooter.id]!!.scooter = scooter
-                } else {
-                    scooterMarkers[scooter.id] = ScooterClusterItem(scooter)
-                    clusterManager.addItem(scooterMarkers[scooter.id])
-                }
-            }
+            val a = R.drawable.ic_icon_scooter_second
+            map?.style?.removeLayer(CLUSTERS_LAYER)
+            map?.style?.removeLayer(SCOOTERS_LAYER)
 
-            clusterManager.cluster()
+            map?.style?.removeSource(SCOOTERS_SOURCE)
+
+            geoJsonSource =  GeoJsonSource(
+                SCOOTERS_SOURCE,
+                FeatureCollection.fromFeatures(scootersFeatures),
+                GeoJsonOptions()
+                    .withCluster(true)
+                    .withClusterMaxZoom(MAX_CLUSTER_ZOOM_LEVEL)
+                    .withClusterRadius(CLUSTER_RADIUS)
+            )
+
+            map?.style?.addSource(
+                geoJsonSource
+            )
+
+            val scootersLayer = SymbolLayer(SCOOTERS_LAYER, SCOOTERS_SOURCE)
+            scootersLayer.setProperties(
+                iconImage(get(SCOOTER_ICON_SOURCE)),
+            )
+
+            map?.style?.addLayer(scootersLayer)
+
+            val layer = intArrayOf(1, ContextCompat.getColor(this, R.color.purple_text))
+
+            val circles = CircleLayer(CLUSTERS_LAYER, SCOOTERS_SOURCE)
+            circles.setProperties(
+                circleColor(layer[1]),
+                circleRadius(18f)
+            )
+            val pointCount = toNumber(get("point_count"))
+
+
+            circles.setFilter(
+                all(
+                    has("point_count"),
+                    gte(pointCount, 1)
+                )
+            )
+
+            map?.style?.addLayer(circles)
+
+            val count = SymbolLayer(COUNT_LAYER, SCOOTERS_SOURCE)
+            count.setProperties(
+                textField(toString(get("point_count"))),
+                textSize(12f),
+                textColor(Color.WHITE),
+                textIgnorePlacement(true),
+                textAllowOverlap(true)
+            )
+
+            map?.style?.removeLayer(COUNT_LAYER)
+            map?.style?.addLayer(count)
+            Timber.tag("drawn").w(map!!.style!!.sources.toString())
         }
 
     }
@@ -225,97 +348,144 @@ class MapActivity : MvpAppCompatActivity(), MapView {
             ) {
                 try {
                     LocationServices.getFusedLocationProviderClient(this).lastLocation.addOnSuccessListener {
-                        val latLng = LatLng(it.latitude, it.longitude)
-                        //presenter.position = latLng
+                        if (it != null) {
+                            val latLng = LatLng(it.latitude, it.longitude)
 
-                        map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 13f))
+                            map?.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 13.0))
 
-                        if(myMarker != null) {
-                            myMarker!!.remove()
-                        }
+                            map?.style?.removeLayer(MY_MARKER_LAYER)
+                            map?.style?.removeSource(MY_MARKER_SOURCE)
 
-                        myMarker = map.addMarker(MarkerOptions().position(latLng))
-                    }
-
-                    map.setOnMyLocationButtonClickListener {
-                        LocationServices.getFusedLocationProviderClient(this).lastLocation.addOnSuccessListener {
-                            try {
-                                val latLng = LatLng(
-                                    it.latitude,
-                                    it.longitude
+                            map?.style?.addSource(
+                                GeoJsonSource(
+                                    MY_MARKER_SOURCE,
+                                    presenter.makeFeatureFromLatLng(latLng)
                                 )
-                                //presenter.position = latLng
-
-                                if(myMarker != null) {
-                                    myMarker!!.remove()
-                                }
-
-                                myMarker = map.addMarker(MarkerOptions().position(latLng))
-
-                                map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 13f))
-                            } catch (e: Exception) {
-                            }
+                            )
+                            map?.style?.addLayer(
+                                SymbolLayer(MY_MARKER_LAYER, MY_MARKER_SOURCE)
+                                    .withProperties(
+                                        iconImage(MY_MARKER_IMAGE),
+                                        iconAllowOverlap(true),
+                                        iconIgnorePlacement(true)
+                                    )
+                            )
                         }
-
-                        return@setOnMyLocationButtonClickListener true
                     }
                 } catch (e: Exception) {
-                    Log.w("Map location error", e.localizedMessage)
+                    Log.w("map? location error", e.localizedMessage)
                 }
             }
         }
     }
 
-    override fun drawRoute(origin: LatLng, destination: LatLng) {
-        GoogleDirection.withServerKey(GOOGLE_API_KEY)
-            .from(LatLng(origin.latitude, origin.longitude))
-            .to(
-                LatLng(
-                    destination.latitude,
-                    destination.longitude
-                )
+    override fun drawRoute(polyline: String) {
+        runOnUiThread {
+            map?.style?.removeLayer(ROUTE_LAYER)
+            map?.style?.removeSource(ROUTE_SOURCE)
+
+            val source = GeoJsonSource(ROUTE_SOURCE)
+            source.setGeoJson(LineString.fromPolyline(polyline, Constants.PRECISION_6))
+            map?.style?.addSource(source)
+
+            map?.style?.addLayer(
+                LineLayer(ROUTE_LAYER, ROUTE_SOURCE)
+                    .withProperties(
+                        lineCap(Property.LINE_CAP_ROUND),
+                        lineJoin(Property.LINE_JOIN_ROUND),
+                        lineWidth(5f),
+                        lineColor(Color.parseColor("#09047E"))
+                    )
             )
-            .transportMode(WALKING)
-            .execute(
-                object : DirectionCallback {
-                    override fun onDirectionSuccess(direction: Direction?) {
-                        Log.w("Route got", direction?.status ?: "")
-                        if (direction != null && direction.isOK) {
-
-                            val polyline = PolylineOptions()
-                                .addAll(direction.routeList.first()!!.overviewPolyline.pointList.map {
-                                    LatLng(
-                                        it.latitude,
-                                        it.longitude
-                                    )
-                                })
-
-                            runOnUiThread {
-                                map.addPolyline(polyline)
-                            }
-                        }
-                    }
-
-                    override fun onDirectionFailure(t: Throwable) {
-                        Log.w("Route exception", t.localizedMessage)
-                    }
-                }
-            )
-
+        }
     }
 
     override fun showScooterCard(scooter: Scooter) {
         runOnUiThread {
-            binding.contentOfMap.mapScooterItem.cardViewScooterItem.visibility = View.VISIBLE
+            if(currentShowingScooter != scooter.id) {
+                binding.contentOfMap.mapScooterItem.cardViewScooterItem.visibility = View.VISIBLE
 
-            binding.contentOfMap.mapScooterItem.cardViewScooterItem.linnearLayoutScooterItemFinishButtons.visibility = View.INVISIBLE
-            binding.contentOfMap.mapScooterItem.cardViewScooterItem.linnearLayoutScooterItemBookingButtons.visibility = View.INVISIBLE
-            binding.contentOfMap.mapScooterItem.cardViewScooterItem.linnearLayoutScooterItemRentButtons.visibility = View.INVISIBLE
-            binding.contentOfMap.mapScooterItem.cardViewScooterItem.textViewItemScooterId.text = "#${scooter.id}"
-            binding.contentOfMap.mapScooterItem.cardViewScooterItem.textViewItemScooterBatteryPercent.text = scooter.getBatteryPercentage()
+                binding.contentOfMap.mapScooterItem.cardViewScooterItem.linnearLayoutScooterItemFinishButtons.visibility =
+                    View.INVISIBLE
+                binding.contentOfMap.mapScooterItem.cardViewScooterItem.linnearLayoutScooterItemBookingButtons.visibility =
+                    View.INVISIBLE
+                binding.contentOfMap.mapScooterItem.cardViewScooterItem.linnearLayoutScooterItemRentButtons.visibility =
+                    View.INVISIBLE
+                binding.contentOfMap.mapScooterItem.cardViewScooterItem.constraintLayoutScooterItemPopupRoute.visibility = View.VISIBLE
+                binding.contentOfMap.mapScooterItem.cardViewScooterItem.constraintLayoutScooterItemPopupLock.visibility = View.INVISIBLE
+                binding.contentOfMap.mapScooterItem.cardViewScooterItem.constraintLayoutScooterItemPopupSignal.visibility = View.INVISIBLE
 
-            Picasso.get().load(BASE_IMAGE_URL + scooter.photo).into(binding.contentOfMap.mapScooterItem.cardViewScooterItem.imageViewScooterItemIcon)
-        }
+                binding.contentOfMap.mapScooterItem.cardViewScooterItem.textViewItemScooterId.text =
+                    "#${scooter.id}"
+                binding.contentOfMap.mapScooterItem.cardViewScooterItem.textViewItemScooterBatteryPercent.text =
+                    scooter.getBatteryPercentage()
+
+                Picasso.get().load(BASE_IMAGE_URL + scooter.photo)
+                    .into(binding.contentOfMap.mapScooterItem.cardViewScooterItem.imageViewScooterItemIcon)
+
+                currentShowingScooter = scooter.id
+            }
+            }
+    }
+
+
+
+    private fun bitmapIconFromVector(
+        @DrawableRes vectorResId: Int
+    ): Bitmap {
+        val vectorDrawable = ContextCompat.getDrawable(this, vectorResId)
+        val backgroundDrawable =
+            ContextCompat.getDrawable(this, R.drawable.ic_purple_circle_with_white_corner)
+
+        vectorDrawable!!.setBounds(
+            (((kotlin.math.max(
+                vectorDrawable.intrinsicWidth,
+                vectorDrawable.intrinsicHeight
+            ) * 1.8).toInt() - vectorDrawable.intrinsicWidth * 1.5) / 1.5).toInt(),
+            (((kotlin.math.max(
+                vectorDrawable.intrinsicWidth,
+                vectorDrawable.intrinsicHeight
+            ) * 1.8).toInt() - vectorDrawable.intrinsicHeight * 1.5) / 1.5).toInt(),
+            (vectorDrawable.intrinsicWidth * 1.5 + 0.5 * (kotlin.math.max(
+                vectorDrawable.intrinsicWidth,
+                vectorDrawable.intrinsicHeight
+            ) * 1.8 - vectorDrawable.intrinsicWidth * 1.5) / 1.5).toInt(),
+            (vectorDrawable.intrinsicHeight * 1.5 + 0.5 * (kotlin.math.max(
+                vectorDrawable.intrinsicWidth,
+                vectorDrawable.intrinsicHeight
+            ) * 1.8 - vectorDrawable.intrinsicHeight * 1.5) / 1.5).toInt()
+        )
+        backgroundDrawable!!.setBounds(
+            0,
+            0,
+            (kotlin.math.max(
+                vectorDrawable.intrinsicWidth,
+                vectorDrawable.intrinsicHeight
+            ) * 1.8).toInt(),
+            (kotlin.math.max(
+                vectorDrawable.intrinsicWidth,
+                vectorDrawable.intrinsicHeight
+            ) * 1.8).toInt()
+        )
+
+        val bitmap = Bitmap.createBitmap(
+            (kotlin.math.max(
+                vectorDrawable.intrinsicWidth,
+                vectorDrawable.intrinsicHeight
+            ) * 1.8).toInt(),
+            (kotlin.math.max(
+                vectorDrawable.intrinsicWidth,
+                vectorDrawable.intrinsicHeight
+            ) * 1.8).toInt(),
+            Bitmap.Config.ARGB_8888
+        )
+
+        val canvas = Canvas(bitmap)
+
+        backgroundDrawable.draw(canvas)
+        vectorDrawable.draw(canvas)
+
+        return Bitmap.createBitmap(bitmap)
     }
 
     override fun onBackPressed() {}
@@ -323,6 +493,22 @@ class MapActivity : MvpAppCompatActivity(), MapView {
     companion object {
         const val PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 99
         const val PERMISSIONS_REQUEST_ACCESS_CAMERA = 100
+        const val MAX_CLUSTER_ZOOM_LEVEL = 14
+        const val CLUSTER_RADIUS = 50
+        const val MY_MARKER_SOURCE = "my-marker-source"
+        const val MY_MARKER_LAYER = "my-marker-layer"
+        const val MY_MARKER_IMAGE = "my-marker-image"
+        const val SCOOTER_ICON_SOURCE = "scooter-image"
+        const val CIRCLES_LAYER = "circles"
+        const val CLUSTERS_LAYER = "clusters"
+        const val SCOOTERS_SOURCE = "scooters"
+        const val SCOOTERS_LAYER = "scooters-layer"
+        const val SCOOTERS_ICON_THIRD = "scooter-third"
+        const val SCOOTERS_ICON_SECOND = "scooter-second"
+        const val SCOOTERS_ICON_FIRST = "scooter-first"
+        const val COUNT_LAYER = "count"
+        const val ROUTE_LAYER = "route"
+        const val ROUTE_SOURCE = "route-source"
     }
 }
 
