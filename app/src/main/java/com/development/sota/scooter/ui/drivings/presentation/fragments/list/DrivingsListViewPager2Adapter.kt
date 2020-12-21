@@ -13,7 +13,8 @@ import kotlinx.android.synthetic.main.item_drivings_list.view.*
 
 class DrivingsListViewPager2Adapter(
     private val context: Context,
-    private val data: Pair<ArrayList<OrderWithStatus>, ArrayList<OrderWithStatus>>
+    private val data: Pair<ArrayList<OrderWithStatus>, ArrayList<OrderWithStatus>>,
+    private val manipulatorDelegate: OrderManipulatorDelegate
 ) : RecyclerView.Adapter<DrivingsListViewPager2Adapter.DrivingsListViewPager2ViewHolder>() {
 
     override fun onCreateViewHolder(
@@ -27,7 +28,7 @@ class DrivingsListViewPager2Adapter(
     override fun onBindViewHolder(holder: DrivingsListViewPager2ViewHolder, position: Int) =
         holder.itemView.run {
             recyclerViewItemDrivingsList.layoutManager = LinearLayoutManager(context)
-         //   recyclerViewItemDrivingsList.adapter = if(position == 0) OrdersAdapter(data.first) else OrdersAdapter(data.second)
+            recyclerViewItemDrivingsList.adapter = if(position == 0) OrdersAdapter(data.first, context, manipulatorDelegate) else FinishedOrderAdapter(data.second, context)
         }
 
     override fun getItemCount(): Int = 2

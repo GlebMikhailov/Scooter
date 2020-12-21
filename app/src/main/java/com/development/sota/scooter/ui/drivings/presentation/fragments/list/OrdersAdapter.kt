@@ -1,5 +1,6 @@
 package com.development.sota.scooter.ui.drivings.presentation.fragments.list
 
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -7,6 +8,7 @@ import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import com.development.sota.scooter.BASE_IMAGE_URL
 import com.development.sota.scooter.R
+import com.development.sota.scooter.ui.drivings.DrivingsActivity
 import com.development.sota.scooter.ui.drivings.domain.entities.OrderStatus
 import com.development.sota.scooter.ui.drivings.domain.entities.OrderWithStatus
 import com.squareup.picasso.Picasso
@@ -17,8 +19,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.*
 import java.util.concurrent.TimeUnit
+import kotlin.collections.ArrayList
 
-class OrdersAdapter(val data: ArrayList<OrderWithStatus>, val manipulatorDelegate: OrderManipulatorDelegate) :
+class OrdersAdapter(var data: ArrayList<OrderWithStatus>, val context: Context, val manipulatorDelegate: OrderManipulatorDelegate) :
     RecyclerView.Adapter<OrdersAdapter.OrdersViewHolder>() {
     private val tickerJobs = hashMapOf<Long, Job>()
 
@@ -29,21 +32,54 @@ class OrdersAdapter(val data: ArrayList<OrderWithStatus>, val manipulatorDelegat
         )
 
     override fun onBindViewHolder(holder: OrdersViewHolder, position: Int) {
-        holder.cardView.linnearLayoutScooterItemFinishButtons.visibility = View.INVISIBLE
-        holder.cardView.linnearLayoutScooterItemBookingButtons.visibility = View.INVISIBLE
-        holder.cardView.linnearLayoutScooterItemRentButtons.visibility = View.INVISIBLE
-        holder.cardView.textViewItemScooterId.text = "#${data[position].order.scooter.id}"
+        holder.cardView.linnearLayoutScooterItemFinishButtons.visibility = View.GONE
+        holder.cardView.linnearLayoutScooterItemBookingButtons.visibility = View.GONE
+        holder.cardView.linnearLayoutScooterItemRentButtons.visibility = View.GONE
+        holder.cardView.linnearLayoutScooterItemFirstBookButtons.visibility = View.GONE
+
+        holder.cardView.textViewItemScooterId.text = "#${data[position].order.scooter}"
         holder.cardView.textViewItemScooterBatteryPercent.text =
-            data[position].order.scooter.getBatteryPercentage()
+            data[position].scooter.getBatteryPercentage()
 
 
         Picasso.get()
-            .load(BASE_IMAGE_URL + data[position].order.scooter.photo)
+            .load(BASE_IMAGE_URL + data[position].scooter.photo)
             .into(holder.cardView.imageViewScooterItemIcon)
 
 
         when (data[position].status) {
-            OrderStatus.ACTIVATE -> {
+            OrderStatus.BOOKED -> {
+                holder.cardView.linnearLayoutScooterItemBookingButtons.visibility = View.VISIBLE
+                holder.cardView.textViewItemScooterStateLabel.setText(R.string.scooter_booked)
+
+                holder.cardView.buttonScooterItemCancelBook.setOnClickListener {
+                    manipulatorDelegate.cancelOrder(data[position].order.id)
+                }
+
+                holder.cardView.buttonItemScooterFirstActivate.setOnClickListener {
+                    data[position].status = OrderStatus.CHOOSE_RATE
+
+                    notifyDataSetChanged()
+                }
+
+                tickerJobs[data[position].order.id] = GlobalScope.launch {
+                    while (true) {
+                        val time = System.currentTimeMillis() - data[position].order.parseStartTime().time
+
+                        val minutes = TimeUnit.MILLISECONDS.toMinutes(time)
+                        val seconds = time / 1000 - minutes * 60
+
+                        delay(1000)
+
+                        (context as DrivingsActivity).runOnUiThread {
+                            holder.cardView.textViewItemScooterStateValue.text =
+                                String.format("%d:%02d", minutes, seconds)
+                        }
+                    }
+                }
+            }
+
+            OrderStatus.CHOOSE_RATE -> {
                 holder.cardView.linnearLayoutScooterItemRentButtons.visibility = View.VISIBLE
                 holder.cardView.textViewItemScooterStateLabel.setText(R.string.scooter_booked)
 
@@ -51,42 +87,46 @@ class OrdersAdapter(val data: ArrayList<OrderWithStatus>, val manipulatorDelegat
                     manipulatorDelegate.cancelOrder(data[position].order.id)
                 }
 
-                holder.cardView.buttonScooterFirstActivate.setOnClickListener {
+                holder.cardView.buttonItemScooterFirstActivate.setOnClickListener {
                     manipulatorDelegate.activateOrder(data[position].order.id)
                 }
 
                 tickerJobs[data[position].order.id] = GlobalScope.launch {
-                    while (data[position].status == OrderStatus.ACTIVATE) {
-                        val time = Date().time - data[position].order.parseStartTime().time
+                    while (true) {
+                        val time = System.currentTimeMillis() - data[position].order.parseStartTime().time
 
-                        val minutes = TimeUnit.SECONDS.toMinutes(time.toLong())
-                        val seconds = time - minutes * 60
+                        val minutes = TimeUnit.MILLISECONDS.toMinutes(time)
+                        val seconds = time / 1000 - minutes * 60
 
                         delay(1000)
 
-                        holder.cardView.textViewItemScooterStateValue.text =
-                            String.format("%02d:%02d", minutes, seconds)
+                        (context as DrivingsActivity).runOnUiThread {
+                            holder.cardView.textViewItemScooterStateValue.text =
+                                String.format("%d:%02d", minutes, seconds)
+                        }
                     }
                 }
             }
 
-            OrderStatus.CHOOSE_RATE -> {
+            OrderStatus.ACTIVATED -> {
                 tickerJobs[data[position].order.id]?.cancel()
 
-                holder.cardView.linnearLayoutScooterItemRentButtons.visibility = View.VISIBLE
-                holder.cardView.textViewItemScooterStateLabel.setText(R.string.scooter_booked)
+                holder.cardView.linnearLayoutScooterItemFinishButtons.visibility = View.VISIBLE
+                holder.cardView.textViewItemScooterStateLabel.setText(R.string.scooter_rented)
 
                 tickerJobs[data[position].order.id] = GlobalScope.launch {
-                    while (data[position].status == OrderStatus.ACTIVATE) {
-                        val time = Date().time - data[position].order.parseStartTime().time
+                    while (true) {
+                        val time = System.currentTimeMillis() - data[position].order.parseStartTime().time
 
-                        val minutes = TimeUnit.SECONDS.toMinutes(time.toLong())
-                        val seconds = time - minutes * 60
+                        val minutes = TimeUnit.MILLISECONDS.toMinutes(time)
+                        val seconds = time / 1000 - minutes * 60
 
                         delay(1000)
 
-                        holder.cardView.textViewItemScooterStateValue.text =
-                            String.format("%02d:%02d", minutes, seconds)
+                        (context as DrivingsActivity).runOnUiThread {
+                            holder.cardView.textViewItemScooterStateValue.text =
+                                String.format("%d:%02d", minutes, seconds)
+                        }
                     }
                 }
             }
@@ -95,6 +135,12 @@ class OrdersAdapter(val data: ArrayList<OrderWithStatus>, val manipulatorDelegat
     }
 
     override fun getItemCount(): Int = data.size
+
+    override fun onDetachedFromRecyclerView(recyclerView: RecyclerView) {
+        super.onDetachedFromRecyclerView(recyclerView)
+
+        tickerJobs.values.forEach(Job::cancel)
+    }
 
     inner class OrdersViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val cardView: CardView = itemView.cardViewScooterItem

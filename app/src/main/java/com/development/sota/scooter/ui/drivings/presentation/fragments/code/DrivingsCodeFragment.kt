@@ -51,7 +51,7 @@ class DrivingsCodeFragment(val drivingsView: DrivingsActivityView, val scooterTo
             drivingsView.onBackPressedByType(DrivingsListFragmentType.CODE)
         }
 
-
+        //TODO: Add lantern support
         return binding.root
     }
 

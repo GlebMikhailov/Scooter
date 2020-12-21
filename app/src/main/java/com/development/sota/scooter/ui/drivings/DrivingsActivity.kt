@@ -6,6 +6,7 @@ import com.development.sota.scooter.R
 import com.development.sota.scooter.databinding.ActivityDrivingsBinding
 import com.development.sota.scooter.ui.drivings.presentation.fragments.QRFragment
 import com.development.sota.scooter.ui.drivings.presentation.fragments.code.DrivingsCodeFragment
+import com.development.sota.scooter.ui.drivings.presentation.fragments.list.DrivingsListFragment
 import moxy.MvpAppCompatActivity
 import moxy.MvpAppCompatFragment
 import moxy.MvpView
@@ -110,9 +111,9 @@ class DrivingsActivity : MvpAppCompatActivity(), DrivingsView, DrivingsActivityV
                         }
 
                         if (saveListFragment == null) {
-                            saveListFragment = QRFragment(this@DrivingsActivity)
+                            saveListFragment = DrivingsListFragment(this@DrivingsActivity)
 
-                            add(R.id.drivings_frame, saveCodeFragment!!)
+                            add(R.id.drivings_frame, saveListFragment!!)
                         } else {
                             show(saveQrFragment!!)
                         }

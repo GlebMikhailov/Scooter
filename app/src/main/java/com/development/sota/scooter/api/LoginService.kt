@@ -11,9 +11,6 @@ interface LoginService {
 
     @POST("ClientLogIn/")
     @FormUrlEncoded
-    @Headers(
-        "User-Agent: Sota Dev Scooter Android Web Connector"
-    )
     fun clientLogin(
         @Field("phone") phone: String,
         @Field("name") name: String

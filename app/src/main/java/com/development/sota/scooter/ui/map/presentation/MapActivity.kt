@@ -2,13 +2,20 @@ package com.development.sota.scooter.ui.map.presentation
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.*
 import android.os.Bundle
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.style.ForegroundColorSpan
 import android.util.Log
 import android.view.View
+import android.widget.Button
+import android.widget.Toast
 import androidx.annotation.DrawableRes
+import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
@@ -17,6 +24,9 @@ import com.development.sota.scooter.R
 import com.development.sota.scooter.databinding.ActivityMapBinding
 import com.development.sota.scooter.ui.drivings.DrivingsActivity
 import com.development.sota.scooter.ui.drivings.DrivingsStartTarget
+import com.development.sota.scooter.ui.drivings.domain.entities.Order
+import com.development.sota.scooter.ui.drivings.domain.entities.OrderStatus
+import com.development.sota.scooter.ui.map.data.Rate
 import com.development.sota.scooter.ui.map.data.Scooter
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -44,11 +54,18 @@ import com.mapbox.mapboxsdk.style.sources.GeoJsonOptions
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.item_scooter_driving.view.*
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import moxy.MvpAppCompatActivity
 import moxy.MvpView
 import moxy.ktx.moxyPresenter
 import moxy.viewstate.strategy.alias.AddToEnd
 import timber.log.Timber
+import java.util.*
+import java.util.concurrent.TimeUnit
+import kotlin.collections.ArrayList
 
 
 interface MapView : MvpView {
@@ -62,7 +79,28 @@ interface MapView : MvpView {
     fun drawRoute(polyline: String)
 
     @AddToEnd
-    fun showScooterCard(scooter: Scooter)
+    fun showScooterCard(scooter: Scooter, status: OrderStatus)
+
+    @AddToEnd
+    fun setRateForScooterCard(rate: Rate, scooterId: Long)
+
+    @AddToEnd
+    fun setDialogBy(type: MapDialogType)
+
+    @AddToEnd
+    fun showToast(text: String)
+
+    @AddToEnd
+    fun setLoading(by: Boolean)
+
+    @AddToEnd
+    fun initPopupMapView(orders: List<Order>, bookCount: Int, rentCount: Int)
+
+    @AddToEnd
+    fun sendToDrivingsList()
+
+    @AddToEnd
+    fun updateState()
 }
 
 class MapActivity : MvpAppCompatActivity(), MapView {
@@ -77,6 +115,8 @@ class MapActivity : MvpAppCompatActivity(), MapView {
     private var myMarker: MarkerView? = null
     private lateinit var geoJsonSource: GeoJsonSource
 
+    private val disposableJobsBag = hashSetOf<Job>()
+
     private var currentShowingScooter = -1L
 
     @SuppressLint("UseCompatLoadingForDrawables")
@@ -87,9 +127,9 @@ class MapActivity : MvpAppCompatActivity(), MapView {
         _binding = ActivityMapBinding.inflate(layoutInflater)
 
         setContentView(binding.root)
-        
-       
-        binding.contentOfMap.mapScooterItem.cardViewScooterItem.visibility = View.GONE
+
+
+
         binding.contentOfMap.imageButtonMapQr.setOnClickListener {
             if (ActivityCompat.checkSelfPermission(
                     this,
@@ -110,6 +150,7 @@ class MapActivity : MvpAppCompatActivity(), MapView {
         }
 
         binding.contentOfMap.imageButtonMapLocation.setOnClickListener {
+            Timber.w("Geoposition")
             if (ActivityCompat.checkSelfPermission(
                     this,
                     Manifest.permission.ACCESS_FINE_LOCATION
@@ -119,6 +160,23 @@ class MapActivity : MvpAppCompatActivity(), MapView {
             } else {
                 getLocationPermission()
             }
+        }
+
+        binding.contentOfMap.mapPopupItem.constraintLayoutParentPopupMap.clipToOutline = true
+
+        binding.contentOfMap.mapScooterItem.constraintLayoutItemScooterParent.clipToOutline = true
+        binding.contentOfMap.mapScooterItem.constraintLayoutItemScooterParent.visibility = View.GONE
+
+        binding.navView.setNavigationItemSelectedListener {
+            when(it.itemId) {
+                R.id.menuMapItemDrivings -> presenter.sendToTheDrivingsList()
+            }
+
+            return@setNavigationItemSelectedListener true
+        }
+
+        binding.contentOfMap.mapPopupItem.cardViewPopupMap.setOnClickListener {
+            presenter.sendToTheDrivingsList()
         }
 
         fusedLocationProviderClient = FusedLocationProviderClient(this)
@@ -163,17 +221,22 @@ class MapActivity : MvpAppCompatActivity(), MapView {
                 val mapClickScootersList = map.queryRenderedFeatures(rectF, SCOOTERS_LAYER)
 
                 if (mapClickFeatureList.isNotEmpty()) {
-                    val clusterLeavesFeatureCollection: FeatureCollection = geoJsonSource.getClusterLeaves(
-                        mapClickFeatureList[0],
-                        8000, 0
-                    )
+                    val clusterLeavesFeatureCollection: FeatureCollection =
+                        geoJsonSource.getClusterLeaves(
+                            mapClickFeatureList[0],
+                            8000, 0
+                        )
                     moveCameraToLeavesBounds(clusterLeavesFeatureCollection)
                 }
 
-                if(currentShowingScooter == -1L && mapClickScootersList.size == 1) {
+                if (mapClickScootersList.size == 1) {
                     val scooter = mapClickScootersList.first().getProperty("id").asLong
 
-                    presenter.clickedOnScooterWith(id = scooter)
+                    if(currentShowingScooter != scooter) {
+                        presenter.clickedOnScooterWith(id = scooter)
+                    } else {
+                        currentShowingScooter = -1L
+                    }
                 } else {
                     currentShowingScooter = -1L
 
@@ -218,13 +281,14 @@ class MapActivity : MvpAppCompatActivity(), MapView {
     @SuppressLint("UseCompatLoadingForDrawables", "TimberArgCount")
     override fun updateScooterMarkers(scootersFeatures: List<Feature>) {
         runOnUiThread {
-            val a = R.drawable.ic_icon_scooter_second
             map?.style?.removeLayer(CLUSTERS_LAYER)
             map?.style?.removeLayer(SCOOTERS_LAYER)
+            map?.style?.removeLayer(CIRCLES_LAYER)
+            map?.style?.removeLayer(COUNT_LAYER)
 
             map?.style?.removeSource(SCOOTERS_SOURCE)
 
-            geoJsonSource =  GeoJsonSource(
+            geoJsonSource = GeoJsonSource(
                 SCOOTERS_SOURCE,
                 FeatureCollection.fromFeatures(scootersFeatures),
                 GeoJsonOptions()
@@ -400,9 +464,10 @@ class MapActivity : MvpAppCompatActivity(), MapView {
         }
     }
 
-    override fun showScooterCard(scooter: Scooter) {
+    override fun showScooterCard(scooter: Scooter, status: OrderStatus) {
         runOnUiThread {
-            if(currentShowingScooter != scooter.id) {
+            if (currentShowingScooter != scooter.id) {
+                binding.contentOfMap.mapScooterItem.constraintLayoutItemScooterParent.visibility = View.VISIBLE
                 binding.contentOfMap.mapScooterItem.cardViewScooterItem.visibility = View.VISIBLE
 
                 binding.contentOfMap.mapScooterItem.cardViewScooterItem.linnearLayoutScooterItemFinishButtons.visibility =
@@ -411,24 +476,331 @@ class MapActivity : MvpAppCompatActivity(), MapView {
                     View.INVISIBLE
                 binding.contentOfMap.mapScooterItem.cardViewScooterItem.linnearLayoutScooterItemRentButtons.visibility =
                     View.INVISIBLE
-                binding.contentOfMap.mapScooterItem.cardViewScooterItem.constraintLayoutScooterItemPopupRoute.visibility = View.VISIBLE
-                binding.contentOfMap.mapScooterItem.cardViewScooterItem.constraintLayoutScooterItemPopupLock.visibility = View.INVISIBLE
-                binding.contentOfMap.mapScooterItem.cardViewScooterItem.constraintLayoutScooterItemPopupSignal.visibility = View.INVISIBLE
+                binding.contentOfMap.mapScooterItem.cardViewScooterItem.linnearLayoutScooterItemFirstBookButtons.visibility =
+                    View.INVISIBLE
 
-                binding.contentOfMap.mapScooterItem.cardViewScooterItem.textViewItemScooterId.text =
-                    "#${scooter.id}"
-                binding.contentOfMap.mapScooterItem.cardViewScooterItem.textViewItemScooterBatteryPercent.text =
-                    scooter.getBatteryPercentage()
+                binding.contentOfMap.mapScooterItem.cardViewScooterItem.constraintLayoutScooterItemPopupRoute.visibility =
+                    View.INVISIBLE
+                binding.contentOfMap.mapScooterItem.cardViewScooterItem.constraintLayoutScooterItemPopupLock.visibility =
+                    View.INVISIBLE
+                binding.contentOfMap.mapScooterItem.cardViewScooterItem.constraintLayoutScooterItemPopupSignal.visibility =
+                    View.INVISIBLE
 
-                Picasso.get().load(BASE_IMAGE_URL + scooter.photo)
-                    .into(binding.contentOfMap.mapScooterItem.cardViewScooterItem.imageViewScooterItemIcon)
+                when (status) {
+                    OrderStatus.CANDIDIATE -> {
+                        binding.contentOfMap.mapScooterItem.cardViewScooterItem.constraintLayoutScooterItemPopupRoute.visibility =
+                            View.VISIBLE
+                        binding.contentOfMap.mapScooterItem.cardViewScooterItem.linnearLayoutScooterItemFirstBookButtons.visibility =
+                            View.VISIBLE
 
-                currentShowingScooter = scooter.id
+                        binding.contentOfMap.mapScooterItem.cardViewScooterItem.textViewItemScooterMinutePricing.text = ""
+                        binding.contentOfMap.mapScooterItem.cardViewScooterItem.textViewtextViewItemScooterHourPricing.text = ""
+
+                        binding.contentOfMap.mapScooterItem.cardViewScooterItem.textViewItemScooterId.text =
+                            "#${scooter.id}"
+                        binding.contentOfMap.mapScooterItem.cardViewScooterItem.textViewItemScooterBatteryPercent.text =
+                            scooter.getBatteryPercentage()
+
+                        Picasso.get().load(BASE_IMAGE_URL + scooter.photo)
+                            .into(binding.contentOfMap.mapScooterItem.cardViewScooterItem.imageViewScooterItemIcon)
+
+                        currentShowingScooter = scooter.id
+
+                        //TODO: remake activate button
+
+                        findViewById<Button>(R.id.buttonItemScooterFirstActivate).setOnClickListener {
+                            presenter.clickedOnBookButton(scooter.id)
+
+                            currentShowingScooter = -1
+                        }
+
+                        findViewById<Button>(R.id.buttonItemScooterBookFirst).setOnClickListener {
+                            presenter.clickedOnBookButton(scooter.id)
+
+                            currentShowingScooter = -1
+                        }
+
+
+                    }
+
+                    else -> presenter.sendToTheDrivingsList()
+                }
             }
+        }
+    }
+
+    override fun setRateForScooterCard(rate: Rate, scooterId: Long) {
+        runOnUiThread {
+            if (currentShowingScooter == scooterId) {
+                val perMinuteLabel = getString(R.string.scooter_per_minute)
+                val spannableMinute: Spannable =
+                    SpannableString("${rate.minute}₽ $perMinuteLabel")
+
+                spannableMinute.setSpan(
+                    ForegroundColorSpan(Color.BLACK),
+                    0,
+                    rate.minute.length,
+                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
+
+                spannableMinute.setSpan(
+                    ForegroundColorSpan(Color.GRAY),
+                    rate.minute.length,
+                    "${rate.minute}₽ $perMinuteLabel".length,
+                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
+
+
+                val perHourLabel = getString(R.string.scooter_per_hour)
+                val spannableHours: Spannable = SpannableString("${rate.hour}₽ $perHourLabel")
+
+                spannableHours.setSpan(
+                    ForegroundColorSpan(Color.BLACK),
+                    0,
+                    rate.hour.length,
+                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
+
+                spannableHours.setSpan(
+                    ForegroundColorSpan(Color.GRAY),
+                    rate.hour.length,
+                    "${rate.hour}₽ $perHourLabel".length,
+                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
+
+                binding.contentOfMap.mapScooterItem.linearLayoutScooterItemInfoTextView.textViewItemScooterMinutePricing.text =
+                    spannableMinute
+                binding.contentOfMap.mapScooterItem.linearLayoutScooterItemInfoTextView.textViewtextViewItemScooterHourPricing.text =
+                    spannableHours
             }
+        }
+    }
+
+    override fun setDialogBy(type: MapDialogType) {
+        runOnUiThread {
+            when (type) {
+                MapDialogType.NO_MONEY_FOR_START ->
+                    AlertDialog.Builder(this)
+                        .setTitle(R.string.dialog_balance)
+                        .setMessage(R.string.dialog_balance_data)
+                        .setNegativeButton(R.string.dialog_cancel) { dialogInterface: DialogInterface, _ ->
+                            presenter.cancelDialog(
+                                MapDialogType.NO_MONEY_FOR_START
+                            ); dialogInterface.dismiss()
+                        }
+                        .setPositiveButton(R.string.dialog_add) { dialogInterface: DialogInterface, _ -> presenter.purchaseToBalance(); dialogInterface.dismiss() }
+                        .create()
+                        .show()
+
+                MapDialogType.BANNED_FOR_BOOKING ->
+                    AlertDialog.Builder(this)
+                        .setTitle(R.string.dialog_attention)
+                        .setMessage(R.string.dialog_block_book)
+                        .setNegativeButton(R.string.dialog_ok) { dialogInterface: DialogInterface, _ ->
+                            presenter.cancelDialog(
+                                MapDialogType.BANNED_FOR_BOOKING
+                            ); dialogInterface.dismiss()
+                        }
+                        .create()
+                        .show()
+            }
+        }
+    }
+
+    override fun showToast(text: String) {
+        runOnUiThread {
+            Toast.makeText(this, text, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    override fun setLoading(by: Boolean) {
+        runOnUiThread {
+            binding.contentOfMap.progressBarMap.visibility = if (by) View.VISIBLE else View.GONE
+        }
+    }
+
+    override fun initPopupMapView(orders: List<Order>, bookCount: Int, rentCount: Int) {
+        runOnUiThread {
+            disposableJobsBag.forEach(Job::cancel)
+            disposableJobsBag.clear()
+
+            if (bookCount == 0 && rentCount == 0) {
+                binding.contentOfMap.mapPopupItem.constraintLayoutParentPopupMap.visibility =
+                    View.GONE
+            } else {
+                binding.contentOfMap.mapPopupItem.constraintLayoutParentPopupMap.visibility =
+                    View.VISIBLE
+
+                if (bookCount > 0 && rentCount == 0 || bookCount == 0 && rentCount > 0) {
+                    binding.contentOfMap.mapPopupItem.textViewPopupMenuDownBordered.visibility =
+                        View.GONE
+                    binding.contentOfMap.mapPopupItem.textViewPopupMenuDownValue.visibility =
+                        View.GONE
+
+                    binding.contentOfMap.mapPopupItem.spacerPopupMap1.visibility = View.GONE
+                    binding.contentOfMap.mapPopupItem.spacerPopupMap2.visibility = View.GONE
+
+                    if (bookCount == 1) {
+                        binding.contentOfMap.mapPopupItem.textViewPopupMenuUpBordered.text =
+                            "${getString(R.string.map_book)} 1"
+
+                        val bookOrder = orders.first { it.status == OrderStatus.BOOKED.value }
+
+                        disposableJobsBag.add(
+                            GlobalScope.launch {
+                                //TODO: Replace with rate
+                                while (true) {
+                                    val time = System.currentTimeMillis() - bookOrder.parseStartTime().time
+
+                                    val minutes = TimeUnit.MILLISECONDS.toMinutes(time)
+                                    val seconds = time / 1000 - minutes * 60
+
+                                    runOnUiThread {
+                                        binding.contentOfMap.mapPopupItem.textViewPopupMenuUpValue.text =
+                                            String.format("%d:%02d", minutes, seconds)
+                                    }
+
+                                    delay(1000)
+                                }
+                                //Server check
+                            }
+                        )
+                    } else {
+                        binding.contentOfMap.mapPopupItem.textViewPopupMenuUpBordered.text =
+                            "${getString(R.string.map_book)} $bookCount"
+                        binding.contentOfMap.mapPopupItem.textViewPopupMenuUpValue.text =
+                            orders.filter { it.status == OrderStatus.BOOKED.value }.map { it.cost }
+                                .sum().toString() + " ₽"
+                    }
+
+                    if (rentCount == 1) {
+                        binding.contentOfMap.mapPopupItem.textViewPopupMenuUpBordered.text =
+                            "${getString(R.string.map_rent)} 1"
+
+                        val rentOrder = orders.first { it.status == OrderStatus.ACTIVATED.value }
+
+                        disposableJobsBag.add(
+                            GlobalScope.launch {
+                                //TODO: Replace with rate
+                                while (true) {
+                                    val time =
+                                        System.currentTimeMillis() - rentOrder.parseStartTime().time
+
+                                    val minutes = TimeUnit.MILLISECONDS.toMinutes(time)
+                                    val seconds = time / 1000 - minutes * 60
+
+                                    runOnUiThread {
+                                        binding.contentOfMap.mapPopupItem.textViewPopupMenuUpValue.text =
+                                            String.format("%d:%02d", minutes, seconds)
+                                    }
+                                }
+                                //Server check
+                            }
+                        )
+                    } else {
+                        binding.contentOfMap.mapPopupItem.textViewPopupMenuUpBordered.text =
+                            "${getString(R.string.map_rent)} $rentCount"
+                        binding.contentOfMap.mapPopupItem.textViewPopupMenuUpValue.text =
+                            orders.filter { it.status == OrderStatus.ACTIVATED.value }
+                                .map { it.cost }
+                                .sum().toString() + " ₽"
+                    }
+                } else {
+                    binding.contentOfMap.mapPopupItem.textViewPopupMenuDownBordered.visibility =
+                        View.VISIBLE
+                    binding.contentOfMap.mapPopupItem.textViewPopupMenuDownValue.visibility =
+                        View.VISIBLE
+
+                    binding.contentOfMap.mapPopupItem.spacerPopupMap1.visibility = View.VISIBLE
+                    binding.contentOfMap.mapPopupItem.spacerPopupMap2.visibility = View.VISIBLE
+
+                    if (bookCount == 1) {
+                        binding.contentOfMap.mapPopupItem.textViewPopupMenuUpBordered.text =
+                            "${getString(R.string.map_book)} 1"
+
+                        val bookOrder = orders.first { it.status == OrderStatus.BOOKED.value }
+
+                        disposableJobsBag.add(
+                            GlobalScope.launch {
+                                //TODO: Replace with rate
+                                while (true) {
+                                    val time = System.currentTimeMillis() - bookOrder.parseStartTime().time
+
+                                    val minutes = TimeUnit.MILLISECONDS.toMinutes(time)
+                                    val seconds = time / 1000 - minutes * 60
+
+                                    runOnUiThread {
+                                        binding.contentOfMap.mapPopupItem.textViewPopupMenuUpValue.text =
+                                            String.format("%d:%02d", minutes, seconds)
+                                    }
+
+                                    delay(1000)
+                                }
+                                //Server check
+                            }
+                        )
+                    } else {
+                        binding.contentOfMap.mapPopupItem.textViewPopupMenuUpBordered.text =
+                            "${getString(R.string.map_book)} $bookCount"
+                        binding.contentOfMap.mapPopupItem.textViewPopupMenuUpValue.text =
+                            orders.filter { it.status == OrderStatus.BOOKED.value }.map { it.cost }
+                                .sum().toString() + " ₽"
+                    }
+
+                    if (rentCount == 1) {
+                        binding.contentOfMap.mapPopupItem.textViewPopupMenuDownBordered.text =
+                            "${getString(R.string.map_rent)} 1"
+
+                        val rentOrder = orders.first { it.status == OrderStatus.ACTIVATED.value }
+
+                        disposableJobsBag.add(
+                            GlobalScope.launch {
+                                //TODO: Replace with rate
+                                while (true) {
+                                    val time =
+                                        System.currentTimeMillis() - rentOrder.parseStartTime().time
+
+                                    val minutes = TimeUnit.MILLISECONDS.toMinutes(time)
+                                    val seconds = time / 1000 - minutes * 60
+
+                                    runOnUiThread {
+                                        binding.contentOfMap.mapPopupItem.textViewPopupMenuDownValue.text =
+                                            String.format("%02d:%02d", minutes, seconds)
+                                    }
+
+                                    delay(1000)
+                                }
+                                //Server check
+                            }
+                        )
+                    } else {
+                        binding.contentOfMap.mapPopupItem.textViewPopupMenuDownBordered.text =
+                            "${getString(R.string.map_rent)} $rentCount"
+                        binding.contentOfMap.mapPopupItem.textViewPopupMenuDownValue.text =
+                            orders.filter { it.status == OrderStatus.ACTIVATED.value }
+                                .map { it.cost }
+                                .sum().toString() + " ₽"
+                    }
+                }
+            }
+        }
+    }
+
+    override fun updateState() {
+        runOnUiThread {
+
+        }
     }
 
 
+    override fun sendToDrivingsList() {
+        runOnUiThread {
+            val intent = Intent(this, DrivingsActivity::class.java)
+            intent.putExtra("aim", DrivingsStartTarget.DrivingList)
+
+            startActivity(intent)
+        }
+    }
 
     private fun bitmapIconFromVector(
         @DrawableRes vectorResId: Int
@@ -509,6 +881,11 @@ class MapActivity : MvpAppCompatActivity(), MapView {
         const val COUNT_LAYER = "count"
         const val ROUTE_LAYER = "route"
         const val ROUTE_SOURCE = "route-source"
+
+        const val MAX_BOOK_TIME = 900000L
     }
 }
 
+enum class MapDialogType {
+    NO_MONEY_FOR_START, BANNED_FOR_BOOKING
+}

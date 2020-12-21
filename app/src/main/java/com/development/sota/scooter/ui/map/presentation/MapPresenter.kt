@@ -1,18 +1,26 @@
 package com.development.sota.scooter.ui.map.presentation
 
+import android.annotation.SuppressLint
 import android.content.Context
-import android.util.Log
 import com.development.sota.scooter.R
 import com.development.sota.scooter.base.BasePresenter
-import com.development.sota.scooter.ui.map.data.Scooter
+import com.development.sota.scooter.ui.drivings.domain.entities.Order
+import com.development.sota.scooter.ui.drivings.domain.entities.OrderStatus
+import com.development.sota.scooter.ui.map.data.*
 import com.development.sota.scooter.ui.map.domain.MapInteractor
 import com.development.sota.scooter.ui.map.domain.MapInteractorImpl
 import com.mapbox.api.directions.v5.models.DirectionsRoute
 import com.mapbox.geojson.Feature
 import com.mapbox.mapboxsdk.geometry.LatLng
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import moxy.MvpPresenter
+import timber.log.Timber
+import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
 class MapPresenter(val context: Context): MvpPresenter<MapView>(), BasePresenter {
     private val interactor: MapInteractor = MapInteractorImpl(this)
@@ -21,11 +29,24 @@ class MapPresenter(val context: Context): MvpPresenter<MapView>(), BasePresenter
 
     var locationPermissionGranted = false
     var position: LatLng = LatLng(44.894997, 37.316259)
+    var rates = arrayListOf<Rate>() //Minute, Hour
+    var scootersWithOrders = hashMapOf<Long, Long>() //Minute, Hour
     lateinit var scootersGeoJsonSource: List<Feature>
+    var usingScooters = hashSetOf<Long>()
 
     override fun onFirstViewAttach() {
         super.onFirstViewAttach()
-        interactor.getAllScooters()
+
+        GlobalScope.launch(Dispatchers.IO){
+            while(true) {
+                try {
+                    interactor.getScootersAndOrders()
+                } catch (e: Exception) {}
+
+                delay(30000)
+            }
+        }
+
     }
 
     fun scootersGotFromServer(scooters: ArrayList<Scooter>) {
@@ -34,19 +55,73 @@ class MapPresenter(val context: Context): MvpPresenter<MapView>(), BasePresenter
         makeFeaturesFromScootersAndSendToMap()
     }
 
+    fun ordersGotFromServer(orders: List<Order>) {
+        viewState.setLoading(false)
+
+        for(order in orders) {
+            if(order.status == OrderStatus.CLOSED.value) {
+                scootersWithOrders = scootersWithOrders.filterValues { it != order.id } as HashMap<Long, Long>
+            }
+        }
+
+        initMapPopupView(orders)
+    }
+
+    fun scootersAndOrdersGotFormServer(scootersAndOrders: Pair<List<Scooter>, List<Order>>) {
+        GlobalScope.launch {
+            usingScooters.addAll(scootersAndOrders.second.map { it.scooter })
+            scooters = scootersAndOrders.first.filter { it.status == ScooterStatus.ONLINE.value || it.id in usingScooters } as ArrayList<Scooter>
+
+            viewState.setLoading(false)
+
+            makeFeaturesFromScootersAndSendToMap()
+            initMapPopupView(scootersAndOrders.second)
+        }
+    }
+
+    fun initMapPopupView(orders: List<Order>) {
+        val bookCount = orders.count { it.status == OrderStatus.BOOKED.value }
+        val rentCount = orders.count { it.status == OrderStatus.ACTIVATED.value }
+
+        viewState.initPopupMapView(orders, bookCount, rentCount)
+    }
+
+    fun ratesGotFromServer(rates: List<Rate>, scooterId: Long) {
+        this.rates = rates as ArrayList<Rate>
+
+        val neededRate = scooters.first { scooter: Scooter -> scooter.id == scooterId }.rate
+        viewState.setRateForScooterCard(rates.first { rate: Rate -> rate.id == neededRate.toLong() }, scooterId)
+    }
+
     fun getScooters(): ArrayList<Scooter> {
         return scooters
     }
 
     fun clickedOnScooterWith(id: Long) {
         val scooter = scooters.first { it.id == id }
-        viewState.showScooterCard(scooter)
+        viewState.showScooterCard(scooter, OrderStatus.CANDIDIATE)
+
         interactor.getRouteFor(destination = position, origin = scooter.getLatLng())
+        interactor.getRate(id)
     }
 
+    @SuppressLint("TimberArgCount")
     fun errorGotFromServer(error: String) {
-        Log.e("Error", error)
-        //TODO: Error alert
+        Timber.e("SERVER", "%s ", error)
+        viewState.showToast(context.getString(R.string.error_api))
+        viewState.setLoading(false)
+    }
+
+    fun newOrderGotFromServer(orderId: Long, scooterId: Long, withActivation: Boolean) {
+        scootersWithOrders[scooterId] = orderId
+
+        if(withActivation) {
+            interactor.activateOrder(orderId)
+        }
+
+        interactor.getOrders()
+        viewState.setLoading(false)
+        viewState.sendToDrivingsList()
     }
 
     fun updateLocationPermission(permission: Boolean) {
@@ -58,6 +133,41 @@ class MapPresenter(val context: Context): MvpPresenter<MapView>(), BasePresenter
     fun gotRouteFromServer(route: DirectionsRoute) {
         viewState.drawRoute(route.geometry() ?: "{}")
     }
+
+    fun getInfoAboutUserFromServer(info: Pair<Client, BookingBlockResponse>, scooterId: Long, withActivation: Boolean) {
+        if(info.first.balance.toDouble() > 0 && !info.second.blocked) {
+            interactor.addOrder(
+                startTime = Order.dateFormatter.format(Date()),
+                scooterId = scooterId,
+                withActivation = withActivation
+            )
+        } else if(info.first.balance.toDouble() <= 0) {
+            viewState.setLoading(false)
+            viewState.setDialogBy(MapDialogType.NO_MONEY_FOR_START)
+        } else if(info.second.blocked) {
+            viewState.setLoading(false)
+            viewState.setDialogBy(MapDialogType.BANNED_FOR_BOOKING)
+        }
+    }
+
+    fun cancelDialog(type: MapDialogType) {
+
+    }
+
+    fun clickedOnBookButton(scooterId: Long) {
+        viewState.setLoading(true)
+        interactor.checkNoneNullBalanceAndBookBan(scooterId)
+    }
+
+
+    fun purchaseToBalance() {
+        viewState.showToast("Here will be purse")
+    }
+
+    fun sendToTheDrivingsList() {
+        viewState.sendToDrivingsList()
+    }
+
 
     private fun makeFeaturesFromScootersAndSendToMap() {
         GlobalScope.launch {

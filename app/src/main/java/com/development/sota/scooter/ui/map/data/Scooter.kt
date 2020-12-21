@@ -14,12 +14,13 @@ data class Scooter(
     val latitude: Double,
     val longitude: Double,
     val description: String,
-    val photo: String,
+    val photo: String?,
     @Json(name = "tracker_id") val trackerId: String,
     @Json(name = "speed_limit") val speedLimit: Double,
     val lamp: Boolean,
     val engine: Boolean,
-    @Json(name = "scooter_group") val scooterGroup: List<Int>
+    @Json(name = "scooter_group") val scooterGroup: List<Int>,
+    val rate: Int
 ) {
     fun getScooterIcon(): Int {
         return when {

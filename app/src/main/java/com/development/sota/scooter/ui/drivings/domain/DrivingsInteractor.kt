@@ -16,6 +16,8 @@ import io.reactivex.rxjava3.schedulers.Schedulers
 interface DrivingsInteractor : BaseInteractor {
     fun getAllAvailableScooters()
     fun addOrder(order: Order)
+    fun removeOrder(orderId: Long)
+    fun activateOrder(orderId: Long)
 }
 
 class DrivingsInteractorImpl(private val presenter: DrivingsPresenter) : DrivingsInteractor {
@@ -45,15 +47,31 @@ class DrivingsInteractorImpl(private val presenter: DrivingsPresenter) : Driving
     override fun addOrder(order: Order) {
         compositeDisposable.add(
             OrdersRetrofitProvider.service
-                .addOrdersByClientID(
-                    order.date,
-                    order.startTime,
-                    order.finishTime,
-                    order.scooter.id,
-                    sharedPreferences.getLong("id", -1),
-                    1L //TODO: Replace to real rate
-                ).subscribe()
+                .addOrder(
+                    startTime = order.startTime,
+                    scooterId =  order.scooter,
+                    clientId = sharedPreferences.getLong("id", -1)
+                )
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeBy ( )
         )
+    }
+
+    override fun removeOrder(orderId: Long) {
+        compositeDisposable.add(
+            OrdersRetrofitProvider.service
+                .closeOrder(
+                    orderId
+                )
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe()
+        )
+    }
+
+    override fun activateOrder(orderId: Long) {
+        TODO("Not yet implemented")
     }
 
     override fun disposeRequests() {

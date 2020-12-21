@@ -21,6 +21,8 @@ bon !-->
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             app:autoFocusButtonVisible="false"
+            app:frameColor="@color/qr_purple"
+            app:maskColor="#00FFFFFF"
             app:flashButtonVisible="false">
 
         </com.budiyev.android.codescanner.CodeScannerView>

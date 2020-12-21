@@ -66,8 +66,10 @@
     <string name="drivings_inpit_hint">Вы можете найти его на передней панели самоката</string>
     <string name="drivings_active">Активные</string>
     <string name="drivings_history">История</string>
+    <string name="drivings_cancelled">Отменён</string>
 
     <string name="scooter_booked">ЗАБРОНИРОВАН:</string>
+    <string name="scooter_rented">АРЕНДА:</string>
     <string name="scooter_paused">ПАУЗА:</string>
     <string name="scooter_cancel_book">Отменить бронь</string>
     <string name="scooter_activate">Активировать</string>
@@ -81,7 +83,7 @@
     <string name="scooter_signal">Сигнал</string>
     <string name="scooter_open">Открыть</string>
     <string name="scooter_first_book">Забронировать</string>
-    
+
     <string name="menu_profile">Профиль</string>
     <string name="menu_purse">Кошелёк</string>
     <string name="menu_drivings">Поездки</string>
@@ -90,6 +92,21 @@
     <string name="menu_help">Помощь</string>
     <string name="menu_greeting">Привет, мы рады видеть тебя!</string>
     <string name="menu_balance">Баланс:</string>
+    
+    <string name="dialog_attention">Внимание</string>
+    <string name="dialog_block_book">Вы превысили лимит бронирования. Бронь будет доступная через 24 часа. Пока вам доступна только активация.</string>
+    <string name="dialog_balance">Пополнение баланса</string>
+    <string name="dialog_balance_data">У вас недостаточно средств,  пополните баланс.</string>
+    <string name="dialog_cancel">Отменить</string>
+    <string name="dialog_add">Пополнить</string>
+    <string name="dialog_ok">Ок</string>
+    <string name="dialog_free_book_finished">Время бесплатной брони вышло. Далее бронь платная N руб/мин.</string>
+    <string name="dialog_cancel_paid_book">Отменить\nплатное бронирование</string>
+    <string name="dialog_continue">Продолжить</string>
+    <string name="dialog_no_money">На вашем балансе недосточно средств, бронь отменена</string>
+
+    <string name="map_book">БРОНЬ · </string>
+    <string name="map_rent">АРЕНДА · </string>
 
     <string name="skip">Пропустить</string>
     <string name="next">Далее</string>

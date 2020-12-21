@@ -1,6 +1,7 @@
 package com.development.sota.scooter.ui.drivings.domain.entities
 
 import android.annotation.SuppressLint
+import com.development.sota.scooter.ui.map.data.Rate
 import com.development.sota.scooter.ui.map.data.Scooter
 
 import com.squareup.moshi.Json
@@ -9,43 +10,39 @@ import java.util.*
 
 data class Order(
     val id: Long,
-    val date: String,
     @Json(name = "start_time") val startTime: String,
     @Json(name = "finish_time") val finishTime: String,
-    val scooter: Scooter,
-    val cost: Int,
-    //val rate: Rate?
+    @Json(name = "is_paid") val isPaid: Boolean,
+    @Json(name = "activation_time") val activationTime: String = "",
+    val status: String,
+    val scooter: Long,
+    val cost: Double,
+    val rate: Long
 ) {
     companion object {
         @SuppressLint("ConstantLocale")
-        private val timeFormatter = SimpleDateFormat("H:mm:ss", Locale.getDefault())
-        @SuppressLint("ConstantLocale")
-        private val dateFormatter = SimpleDateFormat("dd MM yyyy", Locale.getDefault())
-
-        fun makePreOrder(scooter: Scooter): Order {
-            return Order(
-                -1,
-                    dateFormatter.format(GregorianCalendar.getInstance().time),
-                    timeFormatter.format(GregorianCalendar.getInstance().time),
-                    timeFormatter.format(GregorianCalendar.getInstance().time),
-                    scooter,
-                    1
-                )
-        }
+        val dateFormatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+        val decodeDateFormatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:SSSS'Z'", Locale.getDefault())
     }
+
     fun parseStartTime(): Date {
-        return timeFormatter.parse(startTime) ?: Date()
+        return decodeDateFormatter.parse(startTime) ?: Date()
     }
 
     fun parseEndTime(): Date {
-        return timeFormatter.parse(finishTime) ?: Date()
+        return decodeDateFormatter.parse(finishTime) ?: Date()
     }
 
+    fun parseActivationTime(): Date {
+        return decodeDateFormatter.parse(activationTime) ?: Date()
+    }
 
 }
 
-data class OrderWithStatus(val order: Order, var status: OrderStatus)
+data class OrderWithStatus(val order: Order, val scooter: Scooter, var status: OrderStatus)
 
-enum class OrderStatus {
-    ACTIVATE, CHOOSE_RATE, IN_WORK, CLOSED
+data class AddOrderResponse(val id: Long)
+
+enum class OrderStatus(val value: String) {
+    CANDIDIATE("CA"), BOOKED("BK"), CHOOSE_RATE("CR"), ACTIVATED("AC"), CLOSED("CD"), CANCELED("CCD")
 }
