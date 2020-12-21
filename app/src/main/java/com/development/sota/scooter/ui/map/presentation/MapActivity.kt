@@ -338,7 +338,6 @@ class MapActivity : MvpAppCompatActivity(), MapView {
 
             map?.style?.removeLayer(COUNT_LAYER)
             map?.style?.addLayer(count)
-            Timber.tag("drawn").w(map!!.style!!.sources.toString())
         }
 
     }

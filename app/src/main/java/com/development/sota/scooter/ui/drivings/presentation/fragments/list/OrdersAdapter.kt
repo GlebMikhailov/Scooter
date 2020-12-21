@@ -54,12 +54,17 @@ class OrdersAdapter(var data: ArrayList<OrderWithStatus>, val context: Context, 
 
                 holder.cardView.buttonScooterItemCancelBook.setOnClickListener {
                     manipulatorDelegate.cancelOrder(data[position].order.id)
+
+                    tickerJobs[data[position].order.id]?.cancel()
                 }
 
                 holder.cardView.buttonItemScooterFirstActivate.setOnClickListener {
                     data[position].status = OrderStatus.CHOOSE_RATE
 
-                    notifyDataSetChanged()
+                    (context as DrivingsActivity).runOnUiThread {
+                        notifyDataSetChanged()
+                        notifyItemChanged(position)
+                    }
                 }
 
                 tickerJobs[data[position].order.id] = GlobalScope.launch {
