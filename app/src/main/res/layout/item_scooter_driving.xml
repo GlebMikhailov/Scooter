@@ -7,9 +7,9 @@
     android:id="@+id/constraintLayoutItemScooterParent"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="4dp"
-    android:background="@drawable/ic_white_corner"
-    android:elevation="4dp"
+    android:background="@drawable/ic_scooter_gradient"
+    android:clipToPadding="false"
+    android:elevation="8dp"
     android:outlineProvider="background">
 
     <androidx.cardview.widget.CardView
@@ -32,8 +32,9 @@
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:backgroundTintMode="add">
+            android:layout_height="match_parent"
+            android:backgroundTintMode="add"
+            android:outlineProvider="background">
 
             <ImageView
                 android:id="@+id/imageViewScooterItemIcon"

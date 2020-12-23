@@ -656,12 +656,15 @@ class MapActivity : MvpAppCompatActivity(), MapView {
                                 while (true) {
                                     val time = System.currentTimeMillis() - bookOrder.parseStartTime().time
 
-                                    val minutes = TimeUnit.MILLISECONDS.toMinutes(time)
-                                    val seconds = time / 1000 - minutes * 60
+                                    val rawMinutes = TimeUnit.MILLISECONDS.toMinutes(time)
+
+                                    val hours = rawMinutes / 60
+                                    val minutes = rawMinutes % 60
+                                    val seconds = time / 1000 - minutes * 60 - hours * 3600
 
                                     runOnUiThread {
                                         binding.contentOfMap.mapPopupItem.textViewPopupMenuUpValue.text =
-                                            String.format("%d:%02d", minutes, seconds)
+                                            String.format("%02d:%02d:%02d", hours, minutes, seconds)
                                     }
 
                                     delay(1000)
@@ -690,13 +693,18 @@ class MapActivity : MvpAppCompatActivity(), MapView {
                                     val time =
                                         System.currentTimeMillis() - rentOrder.parseStartTime().time
 
-                                    val minutes = TimeUnit.MILLISECONDS.toMinutes(time)
-                                    val seconds = time / 1000 - minutes * 60
+                                    val rawMinutes = TimeUnit.MILLISECONDS.toMinutes(time)
+
+                                    val hours = rawMinutes / 60
+                                    val minutes = rawMinutes % 60
+                                    val seconds = time / 1000 - minutes * 60 - hours * 3600
 
                                     runOnUiThread {
                                         binding.contentOfMap.mapPopupItem.textViewPopupMenuUpValue.text =
-                                            String.format("%d:%02d", minutes, seconds)
+                                            String.format("%02d:%02d:%02d", hours, minutes, seconds)
                                     }
+
+                                    delay(1000)
                                 }
                                 //Server check
                             }
@@ -730,12 +738,15 @@ class MapActivity : MvpAppCompatActivity(), MapView {
                                 while (true) {
                                     val time = System.currentTimeMillis() - bookOrder.parseStartTime().time
 
-                                    val minutes = TimeUnit.MILLISECONDS.toMinutes(time)
-                                    val seconds = time / 1000 - minutes * 60
+                                    val rawMinutes = TimeUnit.MILLISECONDS.toMinutes(time)
+
+                                    val hours = rawMinutes / 60
+                                    val minutes = rawMinutes % 60
+                                    val seconds = time / 1000 - minutes * 60 - hours * 3600
 
                                     runOnUiThread {
                                         binding.contentOfMap.mapPopupItem.textViewPopupMenuUpValue.text =
-                                            String.format("%d:%02d", minutes, seconds)
+                                            String.format("%02d:%02d:%02d", hours, minutes, seconds)
                                     }
 
                                     delay(1000)
@@ -764,12 +775,15 @@ class MapActivity : MvpAppCompatActivity(), MapView {
                                     val time =
                                         System.currentTimeMillis() - rentOrder.parseStartTime().time
 
-                                    val minutes = TimeUnit.MILLISECONDS.toMinutes(time)
-                                    val seconds = time / 1000 - minutes * 60
+                                    val rawMinutes = TimeUnit.MILLISECONDS.toMinutes(time)
+
+                                    val hours = rawMinutes / 60
+                                    val minutes = rawMinutes % 60
+                                    val seconds = time / 1000 - minutes * 60 - hours * 3600
 
                                     runOnUiThread {
                                         binding.contentOfMap.mapPopupItem.textViewPopupMenuDownValue.text =
-                                            String.format("%02d:%02d", minutes, seconds)
+                                            String.format("%02d:%02d:%02d", hours, minutes, seconds)
                                     }
 
                                     delay(1000)
@@ -822,19 +836,19 @@ class MapActivity : MvpAppCompatActivity(), MapView {
             (((kotlin.math.max(
                 vectorDrawable.intrinsicWidth,
                 vectorDrawable.intrinsicHeight
-            ) * 1.8).toInt() - vectorDrawable.intrinsicWidth * 1.5) / 1.5).toInt(),
+            ) * 1.35).toInt() - vectorDrawable.intrinsicWidth * 1.125) / 1.125).toInt(),
             (((kotlin.math.max(
                 vectorDrawable.intrinsicWidth,
                 vectorDrawable.intrinsicHeight
-            ) * 1.8).toInt() - vectorDrawable.intrinsicHeight * 1.5) / 1.5).toInt(),
-            (vectorDrawable.intrinsicWidth * 1.5 + 0.5 * (kotlin.math.max(
+            ) * 1.35).toInt() - vectorDrawable.intrinsicHeight * 1.125) / 1.125).toInt(),
+            (vectorDrawable.intrinsicWidth * 1.125 + 0.375 * (kotlin.math.max(
                 vectorDrawable.intrinsicWidth,
                 vectorDrawable.intrinsicHeight
-            ) * 1.8 - vectorDrawable.intrinsicWidth * 1.5) / 1.5).toInt(),
-            (vectorDrawable.intrinsicHeight * 1.5 + 0.5 * (kotlin.math.max(
+            ) * 1.35 - vectorDrawable.intrinsicWidth * 1.125) / 1.125).toInt(),
+            (vectorDrawable.intrinsicHeight * 1.125 + 0.375 * (kotlin.math.max(
                 vectorDrawable.intrinsicWidth,
                 vectorDrawable.intrinsicHeight
-            ) * 1.8 - vectorDrawable.intrinsicHeight * 1.5) / 1.5).toInt()
+            ) * 1.35 - vectorDrawable.intrinsicHeight * 1.125) / 1.125).toInt()
         )
         backgroundDrawable!!.setBounds(
             0,
@@ -842,22 +856,22 @@ class MapActivity : MvpAppCompatActivity(), MapView {
             (kotlin.math.max(
                 vectorDrawable.intrinsicWidth,
                 vectorDrawable.intrinsicHeight
-            ) * 1.8).toInt(),
+            ) * 1.35).toInt(),
             (kotlin.math.max(
                 vectorDrawable.intrinsicWidth,
                 vectorDrawable.intrinsicHeight
-            ) * 1.8).toInt()
+            ) * 1.35).toInt()
         )
 
         val bitmap = Bitmap.createBitmap(
             (kotlin.math.max(
                 vectorDrawable.intrinsicWidth,
                 vectorDrawable.intrinsicHeight
-            ) * 1.8).toInt(),
+            ) * 1.35).toInt(),
             (kotlin.math.max(
                 vectorDrawable.intrinsicWidth,
                 vectorDrawable.intrinsicHeight
-            ) * 1.8).toInt(),
+            ) * 1.35).toInt(),
             Bitmap.Config.ARGB_8888
         )
 

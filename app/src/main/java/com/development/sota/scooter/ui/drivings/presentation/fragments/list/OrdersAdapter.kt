@@ -70,14 +70,17 @@ class OrdersAdapter(var data: ArrayList<OrderWithStatus>, val context: Context, 
                             val time =
                                 System.currentTimeMillis() - data[position].order.parseStartTime().time
 
-                            val minutes = TimeUnit.MILLISECONDS.toMinutes(time)
-                            val seconds = time / 1000 - minutes * 60
+                            val rawMinutes = TimeUnit.MILLISECONDS.toMinutes(time)
+
+                            val hours = rawMinutes / 60
+                            val minutes = rawMinutes % 60
+                            val seconds = time / 1000 - minutes * 60 - hours * 3600
 
                             delay(1000)
 
                             (context as DrivingsActivity).runOnUiThread {
                                 holder.cardView.textViewItemScooterStateValue.text =
-                                    String.format("%d:%02d", minutes, seconds)
+                                    String.format("%02d:%02d:%02d", hours, minutes, seconds)
                             }
                         }
                     } catch (e: Exception) {}
@@ -101,14 +104,17 @@ class OrdersAdapter(var data: ArrayList<OrderWithStatus>, val context: Context, 
                     while (true) {
                         val time = System.currentTimeMillis() - data[position].order.parseStartTime().time
 
-                        val minutes = TimeUnit.MILLISECONDS.toMinutes(time)
-                        val seconds = time / 1000 - minutes * 60
+                        val rawMinutes = TimeUnit.MILLISECONDS.toMinutes(time)
+
+                        val hours = rawMinutes / 60
+                        val minutes = rawMinutes % 60
+                        val seconds = time / 1000 - minutes * 60 - hours * 3600
 
                         delay(1000)
 
                         (context as DrivingsActivity).runOnUiThread {
                             holder.cardView.textViewItemScooterStateValue.text =
-                                String.format("%d:%02d", minutes, seconds)
+                                String.format("%02d:%02d:%02d", hours, minutes, seconds)
                         }
                     }
                     } catch (e: Exception) {}

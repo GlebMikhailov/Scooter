@@ -6,7 +6,7 @@
 
     <color name="white">#FFFFFF</color>
     <color name="gray">#AAAAAA</color>
-    <color name="gray_transparent">#DDFFFFFF</color>
+    <color name="gray_transparent">#D0FFFFFF</color>
     <color name="blue_indicator">#09047E</color>
 
     <color name="background_gray">#E0E0E0</color>
@@ -21,8 +21,8 @@
     <color name="sota_purple_gradient_start">#F300D8</color>
     <color name="sota_purple_gradient_end">#09047E</color>
 
-    <color name="sota_scooter_gradient_start">#FFFFFF</color>
-    <color name="sota_scooter_gradient_end">#F300D8</color>
+    <color name="sota_scooter_gradient_start">#24F300D8</color>
+    <color name="sota_scooter_gradient_end">#00C4C4C4</color>
 
     <color name="segment_white">#FFFFFF</color>
     <color name="segment_gray">#EEEEEF</color>
@@ -31,5 +31,6 @@
     <color name="icon_purple">#9D2CDD</color>
     <color name="border_purple">#9D2CDD</color>
     <color name="qr_purple">#09047E</color>
+    <color name="circle_purple">#9D2CDD</color>
 
 </resources>
