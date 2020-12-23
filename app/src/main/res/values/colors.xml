@@ -6,7 +6,7 @@
 
     <color name="white">#FFFFFF</color>
     <color name="gray">#AAAAAA</color>
-    <color name="gray_transparent">#25AAAAAA</color>
+    <color name="gray_transparent">#DDFFFFFF</color>
     <color name="blue_indicator">#09047E</color>
 
     <color name="background_gray">#E0E0E0</color>
@@ -14,6 +14,7 @@
     <color name="red_edit_text">#FF453A</color>
     <color name="gray_edit_text">#AAAAAA</color>
     <color name="purple_text">#003771</color>
+    <color name="purple_secondary_text">#9D2CDD</color>
 
     <color name="green_switch">#14D53D</color>
 
@@ -22,6 +23,10 @@
 
     <color name="sota_scooter_gradient_start">#FFFFFF</color>
     <color name="sota_scooter_gradient_end">#F300D8</color>
+
+    <color name="segment_white">#FFFFFF</color>
+    <color name="segment_gray">#EEEEEF</color>
+    <color name="segment_black">#000000</color>
 
     <color name="icon_purple">#9D2CDD</color>
     <color name="border_purple">#9D2CDD</color>

@@ -38,8 +38,6 @@ class TutorialActivity : MvpAppCompatActivity(), TutorialView {
 
         binding.buttonTutorialSkip.setOnClickListener { presenter.onSkipButtonClicked() }
 
-        binding.springDotsIndicatorTutorial.setDotIndicatorColor(R.color.blue_indicator)
-        binding.springDotsIndicatorTutorial.setStrokeDotsIndicatorColor(R.color.blue_indicator)
         binding.springDotsIndicatorTutorial.setViewPager2(binding.viewPager2Tutorial)
     }
 

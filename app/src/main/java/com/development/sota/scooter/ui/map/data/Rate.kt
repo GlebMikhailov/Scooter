@@ -11,5 +11,5 @@ data class Rate(
 )
 
 enum class RateType(val value: String) {
-    MINUTE("Minute"), HOUR("Hour")
+    MINUTE("minute"), HOUR("hour")
 }

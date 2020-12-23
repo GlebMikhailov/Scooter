@@ -1,6 +1,7 @@
 package com.development.sota.scooter.ui.drivings.presentation.fragments.list
 
 import android.content.Context
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -41,24 +42,20 @@ class OrdersAdapter(var data: ArrayList<OrderWithStatus>, val context: Context, 
         holder.cardView.textViewItemScooterBatteryPercent.text =
             data[position].scooter.getBatteryPercentage()
 
-
-        Picasso.get()
-            .load(BASE_IMAGE_URL + data[position].scooter.photo)
-            .into(holder.cardView.imageViewScooterItemIcon)
-
-
         when (data[position].status) {
             OrderStatus.BOOKED -> {
                 holder.cardView.linnearLayoutScooterItemBookingButtons.visibility = View.VISIBLE
                 holder.cardView.textViewItemScooterStateLabel.setText(R.string.scooter_booked)
 
                 holder.cardView.buttonScooterItemCancelBook.setOnClickListener {
+                    Log.w("FIRST ACTIVATE", "CLICK")
                     manipulatorDelegate.cancelOrder(data[position].order.id)
 
                     tickerJobs[data[position].order.id]?.cancel()
                 }
 
                 holder.cardView.buttonItemScooterFirstActivate.setOnClickListener {
+                    Log.w("FIRST ACTIVATE", "CLICK")
                     data[position].status = OrderStatus.CHOOSE_RATE
 
                     (context as DrivingsActivity).runOnUiThread {
@@ -68,19 +65,22 @@ class OrdersAdapter(var data: ArrayList<OrderWithStatus>, val context: Context, 
                 }
 
                 tickerJobs[data[position].order.id] = GlobalScope.launch {
-                    while (true) {
-                        val time = System.currentTimeMillis() - data[position].order.parseStartTime().time
+                    try {
+                        while (true) {
+                            val time =
+                                System.currentTimeMillis() - data[position].order.parseStartTime().time
 
-                        val minutes = TimeUnit.MILLISECONDS.toMinutes(time)
-                        val seconds = time / 1000 - minutes * 60
+                            val minutes = TimeUnit.MILLISECONDS.toMinutes(time)
+                            val seconds = time / 1000 - minutes * 60
 
-                        delay(1000)
+                            delay(1000)
 
-                        (context as DrivingsActivity).runOnUiThread {
-                            holder.cardView.textViewItemScooterStateValue.text =
-                                String.format("%d:%02d", minutes, seconds)
+                            (context as DrivingsActivity).runOnUiThread {
+                                holder.cardView.textViewItemScooterStateValue.text =
+                                    String.format("%d:%02d", minutes, seconds)
+                            }
                         }
-                    }
+                    } catch (e: Exception) {}
                 }
             }
 
@@ -97,6 +97,7 @@ class OrdersAdapter(var data: ArrayList<OrderWithStatus>, val context: Context, 
                 }
 
                 tickerJobs[data[position].order.id] = GlobalScope.launch {
+                    try {
                     while (true) {
                         val time = System.currentTimeMillis() - data[position].order.parseStartTime().time
 
@@ -110,6 +111,7 @@ class OrdersAdapter(var data: ArrayList<OrderWithStatus>, val context: Context, 
                                 String.format("%d:%02d", minutes, seconds)
                         }
                     }
+                    } catch (e: Exception) {}
                 }
             }
 
@@ -118,22 +120,8 @@ class OrdersAdapter(var data: ArrayList<OrderWithStatus>, val context: Context, 
 
                 holder.cardView.linnearLayoutScooterItemFinishButtons.visibility = View.VISIBLE
                 holder.cardView.textViewItemScooterStateLabel.setText(R.string.scooter_rented)
-
-                tickerJobs[data[position].order.id] = GlobalScope.launch {
-                    while (true) {
-                        val time = System.currentTimeMillis() - data[position].order.parseStartTime().time
-
-                        val minutes = TimeUnit.MILLISECONDS.toMinutes(time)
-                        val seconds = time / 1000 - minutes * 60
-
-                        delay(1000)
-
-                        (context as DrivingsActivity).runOnUiThread {
-                            holder.cardView.textViewItemScooterStateValue.text =
-                                String.format("%d:%02d", minutes, seconds)
-                        }
-                    }
-                }
+                holder.cardView.textViewItemScooterStateValue.text =
+                    String.format("%.2f", data[position].order.cost)
             }
 
         }

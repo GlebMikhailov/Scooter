@@ -168,6 +168,10 @@ class MapPresenter(val context: Context): MvpPresenter<MapView>(), BasePresenter
         viewState.sendToDrivingsList()
     }
 
+    fun onStartEmitted() {
+        interactor.getScootersAndOrders()
+    }
+
 
     private fun makeFeaturesFromScootersAndSendToMap() {
         GlobalScope.launch {

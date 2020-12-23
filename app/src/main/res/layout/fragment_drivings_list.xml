@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
+    android:layout_height="match_parent"
+    android:animateLayoutChanges="true">
 
     <ImageButton
         android:id="@+id/imageButtonDrivingsListBack"
@@ -33,38 +34,17 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <segmented_control.widget.custom.android.com.segmentedcontrol.SegmentedControl
-        android:id="@+id/segmentedControlDrivingsList"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textViewDrivingsListLabel"
-        app:radiusForEverySegment="false"
-        app:textSize="18sp"
-        app:radius="8dp"
-        app:segmentVerticalMargin="4dp"
-        app:segments="@array/drivings_segments"
-        app:selectedBackgroundColor="@color/icon_purple"
-        app:selectedTextColor="@color/white"
-        app:unSelectedBackgroundColor="@color/white"
-        app:unSelectedTextColor="@color/icon_purple" />
-
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/viewPager2DrivingsList"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/segmentedControlDrivingsList">
-
-    </androidx.viewpager2.widget.ViewPager2>
+        app:layout_constraintTop_toBottomOf="@+id/linnearLayoutSegmentContol"
+        app:layout_constraintVertical_bias="1.0"></androidx.viewpager2.widget.ViewPager2>
 
     <ProgressBar
         android:id="@+id/progressBarDrivingsList"
@@ -77,5 +57,48 @@
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/linnearLayoutSegmentContol"
+        android:layout_width="0dp"
+        android:layout_height="30dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginEnd="16dp"
+        android:background="@drawable/ic_gray_segment_corner"
+        android:gravity="center"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textViewDrivingsListLabel">
+
+        <Button
+            android:id="@+id/buttonDrivingsListActive"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="4dp"
+            android:layout_marginStart="4dp"
+            android:layout_weight="1"
+            android:background="@drawable/ic_white_corners_with_border"
+            android:elevation="4dp"
+            android:text="@string/drivings_active"
+            android:textAllCaps="false"
+            tools:layout_editor_absoluteX="35dp"
+            tools:layout_editor_absoluteY="210dp" />
+
+        <Button
+            android:id="@+id/buttonDrivingsListHistory"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="4dp"
+            android:layout_marginEnd="4dp"
+            android:layout_weight="1"
+            android:background="@drawable/ic_gray_segment_corner"
+            android:text="@string/drivings_history"
+            android:textAllCaps="false"
+            tools:layout_editor_absoluteX="210dp"
+            tools:layout_editor_absoluteY="226dp" />
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

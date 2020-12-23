@@ -3,11 +3,13 @@
 
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/constraintLayoutItemScooterParent"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:layout_margin="4dp"
     android:background="@drawable/ic_white_corner"
-    android:elevation="8dp"
+    android:elevation="4dp"
     android:outlineProvider="background">
 
     <androidx.cardview.widget.CardView
@@ -15,9 +17,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="4dp"
-        android:layout_marginTop="4dp"
+        android:layout_marginTop="8dp"
         android:layout_marginEnd="4dp"
-        android:layout_marginBottom="4dp"
+        android:layout_marginBottom="8dp"
         android:background="#00000000"
         android:outlineProvider="background"
         android:padding="8dp"
@@ -47,7 +49,7 @@
                 app:layout_constraintStart_toEndOf="@+id/textViewItemScooterId"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintVertical_bias="0.0"
-                app:srcCompat="@android:drawable/sym_def_app_icon" />
+                app:srcCompat="@drawable/ic_scooter_profile" />
 
             <TextView
                 android:id="@+id/textViewItemScooterId"
@@ -137,7 +139,7 @@
                 android:background="#00000000"
                 android:orientation="horizontal"
                 android:padding="4dp"
-                android:visibility="visible"
+                android:visibility="invisible"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -178,7 +180,7 @@
                 android:background="#00000000"
                 android:orientation="horizontal"
                 android:padding="4dp"
-                android:visibility="visible"
+                android:visibility="invisible"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -219,7 +221,7 @@
                 android:background="#00000000"
                 android:orientation="horizontal"
                 android:padding="8dp"
-                android:visibility="visible"
+                android:visibility="invisible"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -260,7 +262,7 @@
                 android:background="#00000000"
                 android:orientation="horizontal"
                 android:padding="8dp"
-                android:visibility="visible"
+                android:visibility="invisible"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -287,6 +289,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:background="@drawable/ic_white_circle_with_purple_corner"
+                    android:enabled="true"
                     android:text="@string/scooter_activate"
                     android:textAllCaps="false"
                     android:textColor="@color/purple_text" />
@@ -309,8 +312,10 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:baselineAligned="false"
+                    android:elevation="4dp"
                     android:gravity="center"
                     android:orientation="horizontal"
+                    android:outlineProvider="background"
                     android:paddingEnd="1dp"
                     android:textAlignment="center"
                     app:layout_constraintBottom_toBottomOf="parent"
@@ -332,11 +337,12 @@
 
                     <ImageView
                         android:id="@+id/imageView2"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
                         android:layout_weight="1"
                         android:background="@drawable/ic_white_circle"
-                        android:padding="8dp"
+                        android:padding="4dp"
+                        android:scaleType="centerInside"
                         app:srcCompat="@drawable/ic_icon_route" />
                 </LinearLayout>
 
@@ -358,7 +364,7 @@
                 android:layout_marginEnd="16dp"
                 android:alpha="0.9"
                 android:background="@drawable/ic_gray_transparent_color"
-                android:visibility="gone"
+                android:visibility="visible"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent">
 
@@ -366,8 +372,10 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:baselineAligned="false"
+                    android:elevation="4dp"
                     android:gravity="center"
                     android:orientation="horizontal"
+                    android:outlineProvider="background"
                     android:paddingEnd="1dp"
                     android:textAlignment="center"
                     app:layout_constraintBottom_toBottomOf="parent"
@@ -389,11 +397,12 @@
 
                     <ImageView
                         android:id="@+id/imageView3"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
                         android:layout_weight="1"
                         android:background="@drawable/ic_white_circle"
-                        android:padding="8dp"
+                        android:padding="4dp"
+                        android:scaleType="centerInside"
                         app:srcCompat="@drawable/ic_icon_signal" />
                 </LinearLayout>
 
@@ -413,18 +422,21 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
                 android:layout_marginEnd="16dp"
-                android:alpha="0.9"
                 android:background="@drawable/ic_gray_transparent_color"
-                android:visibility="visible"
+                android:elevation="4dp"
+                android:visibility="invisible"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent">
 
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:background="@drawable/ic_gray_transparent_color"
                     android:baselineAligned="false"
+                    android:elevation="4dp"
                     android:gravity="center"
                     android:orientation="horizontal"
+                    android:outlineProvider="background"
                     android:paddingEnd="1dp"
                     android:textAlignment="center"
                     app:layout_constraintBottom_toBottomOf="parent"
@@ -446,22 +458,20 @@
 
                     <ImageView
                         android:id="@+id/imageView4"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
                         android:layout_weight="1"
                         android:background="@drawable/ic_white_circle"
-                        android:padding="8dp"
+                        android:padding="4dp"
+                        android:scaleType="centerInside"
                         app:srcCompat="@drawable/ic_icon_lock" />
+
+                    <View
+                        android:id="@+id/viewScooterItemLockSignalClickable"
+                        android:layout_width="0dp"
+                        android:layout_height="0dp" />
                 </LinearLayout>
 
-                <View
-                    android:id="@+id/viewScooterItemLockSignalClickable"
-                    android:layout_width="0dp"
-                    android:layout_height="0dp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
             </androidx.constraintlayout.widget.ConstraintLayout>
 
         </androidx.constraintlayout.widget.ConstraintLayout>

@@ -5,6 +5,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.content.ContextCompat
+import androidx.core.os.bundleOf
+import com.addisonelliott.segmentedbutton.SegmentedButtonGroup
+import com.development.sota.scooter.R
 import com.development.sota.scooter.databinding.FragmentDrivingsListBinding
 import com.development.sota.scooter.ui.drivings.DrivingsActivity
 import com.development.sota.scooter.ui.drivings.DrivingsActivityView
@@ -12,6 +16,7 @@ import com.development.sota.scooter.ui.drivings.DrivingsListFragmentType
 import com.development.sota.scooter.ui.drivings.domain.entities.Order
 import com.development.sota.scooter.ui.drivings.domain.entities.OrderWithStatus
 import com.development.sota.scooter.ui.map.data.RateType
+import kotlinx.android.synthetic.main.fragment_drivings_list.*
 import moxy.MvpAppCompatFragment
 import moxy.MvpView
 import moxy.ktx.moxyPresenter
@@ -46,6 +51,8 @@ class DrivingsListFragment(val drivingsView: DrivingsActivityView): MvpAppCompat
     private var _binding: FragmentDrivingsListBinding? = null
     private val binding get() = _binding!!
 
+    private var segmentId = 0
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -53,15 +60,36 @@ class DrivingsListFragment(val drivingsView: DrivingsActivityView): MvpAppCompat
     ): View {
         _binding = FragmentDrivingsListBinding.inflate(inflater, container, false)
 
-        binding.segmentedControlDrivingsList.setSelectedSegment(0)
-        binding.segmentedControlDrivingsList.setOnSegmentSelectRequestListener {
-            binding.viewPager2DrivingsList.setCurrentItem(it.absolutePosition, true)
-
-            return@setOnSegmentSelectRequestListener true
-        }
-
         binding.imageButtonDrivingsListBack.setOnClickListener {
             drivingsView.onBackPressedByType(DrivingsListFragmentType.LIST)
+        }
+
+        binding.viewPager2DrivingsList.isUserInputEnabled = false
+
+        binding.buttonDrivingsListActive.setOnClickListener {
+            if (segmentId == 1) {
+                buttonDrivingsListActive.background = ContextCompat.getDrawable(context!!, R.drawable.ic_white_corner)
+                buttonDrivingsListActive.elevation = 4f
+
+                buttonDrivingsListHistory.background = ContextCompat.getDrawable(context!!, R.drawable.ic_gray_segment_corner)
+                buttonDrivingsListHistory.elevation = 0f
+
+                segmentId = 0
+                binding.viewPager2DrivingsList.currentItem = segmentId
+            }
+        }
+
+        binding.buttonDrivingsListHistory.setOnClickListener {
+            if (segmentId == 0) {
+                buttonDrivingsListHistory.background = ContextCompat.getDrawable(context!!, R.drawable.ic_white_corner)
+                buttonDrivingsListHistory.elevation = 4f
+
+                buttonDrivingsListActive.background = ContextCompat.getDrawable(context!!, R.drawable.ic_gray_segment_corner)
+                buttonDrivingsListActive.elevation = 0f
+
+                segmentId = 1
+                binding.viewPager2DrivingsList.currentItem = segmentId
+            }
         }
 
         return binding.root
@@ -77,11 +105,11 @@ class DrivingsListFragment(val drivingsView: DrivingsActivityView): MvpAppCompat
         activity?.runOnUiThread {
             if (by) {
                 binding.progressBarDrivingsList.visibility = View.VISIBLE
-                binding.segmentedControlDrivingsList.isEnabled = false
+                binding.linnearLayoutSegmentContol.isEnabled = false
                 binding.viewPager2DrivingsList.isEnabled = false
             } else {
                 binding.progressBarDrivingsList.visibility = View.GONE
-                binding.segmentedControlDrivingsList.isEnabled = true
+                binding.linnearLayoutSegmentContol.isEnabled = true
                 binding.viewPager2DrivingsList.isEnabled = true
             }
         }

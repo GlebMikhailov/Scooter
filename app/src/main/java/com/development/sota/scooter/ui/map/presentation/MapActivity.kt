@@ -1,6 +1,7 @@
 package com.development.sota.scooter.ui.map.presentation
 
 import android.Manifest
+import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.content.DialogInterface
 import android.content.Intent
@@ -12,8 +13,10 @@ import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import android.util.Log
 import android.view.View
+import android.view.ViewAnimationUtils
 import android.widget.Button
 import android.widget.Toast
+import android.widget.ViewAnimator
 import androidx.annotation.DrawableRes
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
@@ -53,6 +56,7 @@ import com.mapbox.mapboxsdk.style.layers.SymbolLayer
 import com.mapbox.mapboxsdk.style.sources.GeoJsonOptions
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
 import com.squareup.picasso.Picasso
+import kotlinx.android.synthetic.main.item_popup_map.view.*
 import kotlinx.android.synthetic.main.item_scooter_driving.view.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
@@ -102,6 +106,7 @@ interface MapView : MvpView {
     @AddToEnd
     fun updateState()
 }
+
 
 class MapActivity : MvpAppCompatActivity(), MapView {
     private var _binding: ActivityMapBinding? = null
@@ -162,7 +167,9 @@ class MapActivity : MvpAppCompatActivity(), MapView {
             }
         }
 
-        binding.contentOfMap.mapPopupItem.constraintLayoutParentPopupMap.clipToOutline = true
+        binding.contentOfMap.mapPopupItem.constraintLayoutPopupMap.clipToOutline = true
+        binding.contentOfMap.mapPopupItem.imageViewMapPopupScooterIcon.clipToOutline = true
+        binding.contentOfMap.mapPopupItem.constraintLayoutParentPopupMap.visibility = View.GONE
 
         binding.contentOfMap.mapScooterItem.constraintLayoutItemScooterParent.clipToOutline = true
         binding.contentOfMap.mapScooterItem.constraintLayoutItemScooterParent.visibility = View.GONE
@@ -457,7 +464,7 @@ class MapActivity : MvpAppCompatActivity(), MapView {
                         lineCap(Property.LINE_CAP_ROUND),
                         lineJoin(Property.LINE_JOIN_ROUND),
                         lineWidth(5f),
-                        lineColor(Color.parseColor("#09047E"))
+                        lineColor(Color.parseColor("#0565D7"))
                     )
             )
         }
@@ -484,13 +491,14 @@ class MapActivity : MvpAppCompatActivity(), MapView {
                     View.INVISIBLE
                 binding.contentOfMap.mapScooterItem.cardViewScooterItem.constraintLayoutScooterItemPopupSignal.visibility =
                     View.INVISIBLE
+                binding.contentOfMap.mapScooterItem.cardViewScooterItem.linnearLayoutScooterItemFirstBookButtons.visibility =
+                    View.VISIBLE
 
                 when (status) {
                     OrderStatus.CANDIDIATE -> {
                         binding.contentOfMap.mapScooterItem.cardViewScooterItem.constraintLayoutScooterItemPopupRoute.visibility =
                             View.VISIBLE
-                        binding.contentOfMap.mapScooterItem.cardViewScooterItem.linnearLayoutScooterItemFirstBookButtons.visibility =
-                            View.VISIBLE
+
 
                         binding.contentOfMap.mapScooterItem.cardViewScooterItem.textViewItemScooterMinutePricing.text = ""
                         binding.contentOfMap.mapScooterItem.cardViewScooterItem.textViewtextViewItemScooterHourPricing.text = ""
@@ -499,9 +507,6 @@ class MapActivity : MvpAppCompatActivity(), MapView {
                             "#${scooter.id}"
                         binding.contentOfMap.mapScooterItem.cardViewScooterItem.textViewItemScooterBatteryPercent.text =
                             scooter.getBatteryPercentage()
-
-                        Picasso.get().load(BASE_IMAGE_URL + scooter.photo)
-                            .into(binding.contentOfMap.mapScooterItem.cardViewScooterItem.imageViewScooterItemIcon)
 
                         currentShowingScooter = scooter.id
 
@@ -618,6 +623,7 @@ class MapActivity : MvpAppCompatActivity(), MapView {
         }
     }
 
+    @SuppressLint("UseCompatLoadingForDrawables")
     override fun initPopupMapView(orders: List<Order>, bookCount: Int, rentCount: Int) {
         runOnUiThread {
             disposableJobsBag.forEach(Job::cancel)
@@ -627,8 +633,7 @@ class MapActivity : MvpAppCompatActivity(), MapView {
                 binding.contentOfMap.mapPopupItem.constraintLayoutParentPopupMap.visibility =
                     View.GONE
             } else {
-                binding.contentOfMap.mapPopupItem.constraintLayoutParentPopupMap.visibility =
-                    View.VISIBLE
+                binding.contentOfMap.mapPopupItem.constraintLayoutParentPopupMap.visibility = View.VISIBLE
 
                 if (bookCount > 0 && rentCount == 0 || bookCount == 0 && rentCount > 0) {
                     binding.contentOfMap.mapPopupItem.textViewPopupMenuDownBordered.visibility =
@@ -664,7 +669,7 @@ class MapActivity : MvpAppCompatActivity(), MapView {
                                 //Server check
                             }
                         )
-                    } else {
+                    } else if (bookCount > 1) {
                         binding.contentOfMap.mapPopupItem.textViewPopupMenuUpBordered.text =
                             "${getString(R.string.map_book)} $bookCount"
                         binding.contentOfMap.mapPopupItem.textViewPopupMenuUpValue.text =
@@ -696,7 +701,7 @@ class MapActivity : MvpAppCompatActivity(), MapView {
                                 //Server check
                             }
                         )
-                    } else {
+                    } else if (rentCount >  1) {
                         binding.contentOfMap.mapPopupItem.textViewPopupMenuUpBordered.text =
                             "${getString(R.string.map_rent)} $rentCount"
                         binding.contentOfMap.mapPopupItem.textViewPopupMenuUpValue.text =
@@ -738,7 +743,7 @@ class MapActivity : MvpAppCompatActivity(), MapView {
                                 //Server check
                             }
                         )
-                    } else {
+                    } else if (bookCount > 1) {
                         binding.contentOfMap.mapPopupItem.textViewPopupMenuUpBordered.text =
                             "${getString(R.string.map_book)} $bookCount"
                         binding.contentOfMap.mapPopupItem.textViewPopupMenuUpValue.text =
@@ -772,7 +777,7 @@ class MapActivity : MvpAppCompatActivity(), MapView {
                                 //Server check
                             }
                         )
-                    } else {
+                    } else if (rentCount > 1) {
                         binding.contentOfMap.mapPopupItem.textViewPopupMenuDownBordered.text =
                             "${getString(R.string.map_rent)} $rentCount"
                         binding.contentOfMap.mapPopupItem.textViewPopupMenuDownValue.text =
@@ -791,12 +796,17 @@ class MapActivity : MvpAppCompatActivity(), MapView {
         }
     }
 
+    override fun onStart() {
+        super.onStart()
+        presenter.onStartEmitted()
+    }
+
 
     override fun sendToDrivingsList() {
         runOnUiThread {
             val intent = Intent(this, DrivingsActivity::class.java)
-            intent.putExtra("aim", DrivingsStartTarget.DrivingList)
 
+            intent.putExtra("aim", DrivingsStartTarget.DrivingList)
             startActivity(intent)
         }
     }
