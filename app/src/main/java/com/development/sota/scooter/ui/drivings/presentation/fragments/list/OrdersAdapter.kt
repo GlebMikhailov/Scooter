@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.cardview.widget.CardView
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
 import com.development.sota.scooter.BASE_IMAGE_URL
 import com.development.sota.scooter.R
@@ -33,6 +34,7 @@ class OrdersAdapter(var data: ArrayList<OrderWithStatus>, val context: Context, 
         )
 
     override fun onBindViewHolder(holder: OrdersViewHolder, position: Int) {
+        holder.constaraintViewParent.elevation = 0f
         holder.cardView.linnearLayoutScooterItemFinishButtons.visibility = View.GONE
         holder.cardView.linnearLayoutScooterItemBookingButtons.visibility = View.GONE
         holder.cardView.linnearLayoutScooterItemRentButtons.visibility = View.GONE
@@ -143,5 +145,6 @@ class OrdersAdapter(var data: ArrayList<OrderWithStatus>, val context: Context, 
 
     inner class OrdersViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val cardView: CardView = itemView.cardViewScooterItem
+        val constaraintViewParent: ConstraintLayout = itemView.constraintLayoutItemScooterParent
     }
 }
