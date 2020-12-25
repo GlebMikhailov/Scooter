@@ -16,6 +16,10 @@
         <item name="colorAccent">@color/icon_purple</item>
     </style>
 
+    <style name="AppTheme.Launch" parent="FullscreenAppTheme">
+        <item name="android:windowBackground">@drawable/ic_launch_screen</item>
+    </style>
+
 
     <style name="SCBSwitch" parent="Theme.AppCompat.Light">
         <item name="colorControlActivated">@color/green_switch</item>
