@@ -7,7 +7,6 @@ import android.os.Bundle
 import com.development.sota.scooter.ui.login.presentation.LoginActivity
 import com.development.sota.scooter.ui.map.presentation.MapActivity
 import com.development.sota.scooter.ui.tutorial.presentation.TutorialActivity
-import com.mapbox.mapboxsdk.Mapbox
 import com.microsoft.appcenter.AppCenter
 import com.microsoft.appcenter.analytics.Analytics
 import com.microsoft.appcenter.crashes.Crashes

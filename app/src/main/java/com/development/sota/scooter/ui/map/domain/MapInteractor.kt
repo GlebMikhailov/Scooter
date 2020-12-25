@@ -21,7 +21,6 @@ import io.reactivex.rxjava3.schedulers.Schedulers
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import kotlin.collections.ArrayList
 
 
 interface MapInteractor : BaseInteractor {
@@ -33,6 +32,8 @@ interface MapInteractor : BaseInteractor {
     fun getOrders()
     fun activateOrder(id: Long)
     fun getScootersAndOrders()
+    fun getGeoZone()
+    fun getCodeOfScooterAndNull(): Long?
 }
 
 class MapInteractorImpl(private val presenter: MapPresenter) : MapInteractor {
@@ -65,12 +66,22 @@ class MapInteractorImpl(private val presenter: MapPresenter) : MapInteractor {
     override fun checkNoneNullBalanceAndBookBan(scooterId: Long, withActivation: Boolean) {
         compositeDisposable.add(
             Observables.zip(
-                ClientRetrofitProvider.service.getClient(sharedPreferences.getLong("id", -1).toString()),
-                ClientRetrofitProvider.service.checkBookingBlock(sharedPreferences.getLong("id", -1).toString())
+                ClientRetrofitProvider.service.getClient(
+                    sharedPreferences.getLong("id", -1).toString()
+                ),
+                ClientRetrofitProvider.service.checkBookingBlock(
+                    sharedPreferences.getLong("id", -1).toString()
+                )
             ).subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeBy(
-                    onNext = { presenter.getInfoAboutUserFromServer(Pair(it.first[0], it.second),scooterId = scooterId, withActivation = withActivation) },
+                    onNext = {
+                        presenter.getInfoAboutUserFromServer(
+                            Pair(it.first[0], it.second),
+                            scooterId = scooterId,
+                            withActivation = withActivation
+                        )
+                    },
                     onError = { presenter.errorGotFromServer(it.localizedMessage) }
                 )
         )
@@ -85,14 +96,14 @@ class MapInteractorImpl(private val presenter: MapPresenter) : MapInteractor {
             .profile(DirectionsCriteria.PROFILE_WALKING)
             .build()
 
-        client.enqueueCall(object: Callback<DirectionsResponse> {
+        client.enqueueCall(object : Callback<DirectionsResponse> {
             override fun onResponse(
                 call: Call<DirectionsResponse>,
                 response: Response<DirectionsResponse>
             ) {
                 val routes = response.body()?.routes()
 
-                if(routes != null && routes.isNotEmpty()) {
+                if (routes != null && routes.isNotEmpty()) {
                     presenter.gotRouteFromServer(routes[0])
                 }
             }
@@ -106,7 +117,11 @@ class MapInteractorImpl(private val presenter: MapPresenter) : MapInteractor {
 
     override fun addOrder(startTime: String, scooterId: Long, withActivation: Boolean) {
         compositeDisposable.add(
-            OrdersRetrofitProvider.service.addOrder(startTime = startTime, scooterId = scooterId, clientId = sharedPreferences.getLong("id", -1))
+            OrdersRetrofitProvider.service.addOrder(
+                startTime = startTime,
+                scooterId = scooterId,
+                clientId = sharedPreferences.getLong("id", -1)
+            )
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeBy(
@@ -150,6 +165,29 @@ class MapInteractorImpl(private val presenter: MapPresenter) : MapInteractor {
                     onError = { presenter.errorGotFromServer(it.localizedMessage) }
                 )
         )
+    }
+
+    override fun getGeoZone() {
+        compositeDisposable.add(
+            MapRetrofitProvider.jsonlessService.getGeoZone()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeBy(
+                    onNext = { presenter.geoZoneGot(it) },
+                    onError = { presenter.errorGotFromServer(it.localizedMessage ?: "") }
+                )
+        )
+    }
+
+    override fun getCodeOfScooterAndNull(): Long? {
+        if (sharedPreferences.contains("scooter_show")) {
+            val id = sharedPreferences.getLong("scooter_id", -1)
+            sharedPreferences.edit().remove("scooter_id").apply()
+
+            return id
+        } else {
+            return null
+        }
     }
 
     override fun disposeRequests() {

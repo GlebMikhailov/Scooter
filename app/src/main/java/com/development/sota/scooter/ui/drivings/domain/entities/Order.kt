@@ -1,19 +1,17 @@
 package com.development.sota.scooter.ui.drivings.domain.entities
 
 import android.annotation.SuppressLint
-import com.development.sota.scooter.ui.map.data.Rate
 import com.development.sota.scooter.ui.map.data.Scooter
-
-import com.squareup.moshi.Json
+import com.google.gson.annotations.SerializedName
 import java.text.SimpleDateFormat
 import java.util.*
 
 data class Order(
     val id: Long,
-    @Json(name = "start_time") val startTime: String,
-    @Json(name = "finish_time") val finishTime: String,
-    @Json(name = "is_paid") val isPaid: Boolean,
-    @Json(name = "activation_time") val activationTime: String = "",
+    @SerializedName("start_time") val startTime: String,
+    @SerializedName("finish_time") val finishTime: String,
+    @SerializedName("is_paid") val isPaid: Boolean,
+    @SerializedName("activation_time") val activationTime: String = "",
     val status: String,
     val scooter: Long,
     val cost: Double,
@@ -22,7 +20,8 @@ data class Order(
     companion object {
         @SuppressLint("ConstantLocale")
         val dateFormatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
-        val decodeDateFormatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:SSSS'Z'", Locale.getDefault())
+        val decodeDateFormatter =
+            SimpleDateFormat("yyyy-MM-dd'T'HH:mm:SSSS'Z'", Locale.getDefault())
     }
 
     fun parseStartTime(): Date {

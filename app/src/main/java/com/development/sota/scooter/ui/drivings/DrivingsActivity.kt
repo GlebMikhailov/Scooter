@@ -27,6 +27,8 @@ interface DrivingsActivityView {
     fun onBackPressedByType(type: DrivingsListFragmentType)
 
     fun sendToCodeActivity()
+
+    fun toggleLantern()
 }
 
 interface DrivingsFragmentView {
@@ -139,6 +141,14 @@ class DrivingsActivity : MvpAppCompatActivity(), DrivingsView, DrivingsActivityV
     override fun sendToCodeActivity() {
         runOnUiThread {
             presenter.returnedFromQRSendToCode()
+        }
+    }
+
+    override fun toggleLantern() {
+        runOnUiThread {
+            if (saveQrFragment != null) {
+                (saveQrFragment!! as QRFragment).toggleLantern()
+            }
         }
     }
 

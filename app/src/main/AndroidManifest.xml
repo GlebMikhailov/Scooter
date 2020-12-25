@@ -6,6 +6,7 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.FLASHLIGHT" />
 
     <uses-feature
         android:glEsVersion="0x00020000"
@@ -37,7 +38,8 @@
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />
 
-        <activity android:name=".ui.map.presentation.MapActivity"
+        <activity
+            android:name=".ui.map.presentation.MapActivity"
             android:screenOrientation="portrait" />
         <activity
             android:name=".ui.tutorial.presentation.TutorialActivity"

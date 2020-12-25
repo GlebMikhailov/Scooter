@@ -72,6 +72,7 @@
                 android:textAllCaps="true"
                 android:textColor="@android:color/black"
                 android:textSize="18sp"
+                android:visibility="visible"
                 app:layout_constraintStart_toStartOf="@+id/textViewItemScooterId"
                 app:layout_constraintTop_toBottomOf="@+id/textViewItemScooterId" />
 
@@ -141,7 +142,6 @@
                 android:layout_marginBottom="8dp"
                 android:background="#00000000"
                 android:orientation="horizontal"
-                android:padding="4dp"
                 android:visibility="visible"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -181,7 +181,6 @@
                 android:layout_marginBottom="8dp"
                 android:background="#00000000"
                 android:orientation="horizontal"
-                android:padding="4dp"
                 android:visibility="invisible"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -221,7 +220,6 @@
                 android:layout_marginBottom="8dp"
                 android:background="#00000000"
                 android:orientation="horizontal"
-                android:padding="8dp"
                 android:visibility="invisible"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -261,7 +259,6 @@
                 android:layout_marginBottom="8dp"
                 android:background="#00000000"
                 android:orientation="horizontal"
-                android:padding="8dp"
                 android:visibility="invisible"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -283,13 +280,13 @@
                     android:id="@+id/buttonItemScooterFirstActivate"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
                     android:layout_weight="1"
                     android:background="@drawable/ic_white_circle_with_purple_corner"
                     android:enabled="true"
                     android:text="@string/scooter_activate"
                     android:textAllCaps="false"
-                    android:textColor="@color/purple_secondary_text"
-                    android:layout_marginStart="4dp" />
+                    android:textColor="@color/purple_text" />
             </LinearLayout>
 
 

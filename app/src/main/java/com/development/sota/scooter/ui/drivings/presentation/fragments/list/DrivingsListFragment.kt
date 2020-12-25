@@ -6,14 +6,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.content.ContextCompat
-import androidx.core.os.bundleOf
-import com.addisonelliott.segmentedbutton.SegmentedButtonGroup
 import com.development.sota.scooter.R
 import com.development.sota.scooter.databinding.FragmentDrivingsListBinding
-import com.development.sota.scooter.ui.drivings.DrivingsActivity
 import com.development.sota.scooter.ui.drivings.DrivingsActivityView
 import com.development.sota.scooter.ui.drivings.DrivingsListFragmentType
-import com.development.sota.scooter.ui.drivings.domain.entities.Order
 import com.development.sota.scooter.ui.drivings.domain.entities.OrderWithStatus
 import com.development.sota.scooter.ui.map.data.RateType
 import kotlinx.android.synthetic.main.fragment_drivings_list.*
@@ -41,7 +37,8 @@ interface OrderManipulatorDelegate {
     fun setRateAndActivate(id: Long, type: RateType)
 }
 
-class DrivingsListFragment(val drivingsView: DrivingsActivityView): MvpAppCompatFragment(), DrivingsListView, OrderManipulatorDelegate {
+class DrivingsListFragment(val drivingsView: DrivingsActivityView) : MvpAppCompatFragment(),
+    DrivingsListView, OrderManipulatorDelegate {
     private val presenter by moxyPresenter {
         DrivingsListPresenter(
             context ?: activity?.applicationContext!!
@@ -68,10 +65,12 @@ class DrivingsListFragment(val drivingsView: DrivingsActivityView): MvpAppCompat
 
         binding.buttonDrivingsListActive.setOnClickListener {
             if (segmentId == 1) {
-                buttonDrivingsListActive.background = ContextCompat.getDrawable(context!!, R.drawable.ic_white_corner)
+                buttonDrivingsListActive.background =
+                    ContextCompat.getDrawable(context!!, R.drawable.ic_white_corner)
                 buttonDrivingsListActive.elevation = 4f
 
-                buttonDrivingsListHistory.background = ContextCompat.getDrawable(context!!, R.drawable.ic_gray_segment_corner)
+                buttonDrivingsListHistory.background =
+                    ContextCompat.getDrawable(context!!, R.drawable.ic_gray_segment_corner)
                 buttonDrivingsListHistory.elevation = 0f
 
                 segmentId = 0
@@ -81,10 +80,12 @@ class DrivingsListFragment(val drivingsView: DrivingsActivityView): MvpAppCompat
 
         binding.buttonDrivingsListHistory.setOnClickListener {
             if (segmentId == 0) {
-                buttonDrivingsListHistory.background = ContextCompat.getDrawable(context!!, R.drawable.ic_white_corner)
+                buttonDrivingsListHistory.background =
+                    ContextCompat.getDrawable(context!!, R.drawable.ic_white_corner)
                 buttonDrivingsListHistory.elevation = 4f
 
-                buttonDrivingsListActive.background = ContextCompat.getDrawable(context!!, R.drawable.ic_gray_segment_corner)
+                buttonDrivingsListActive.background =
+                    ContextCompat.getDrawable(context!!, R.drawable.ic_gray_segment_corner)
                 buttonDrivingsListActive.elevation = 0f
 
                 segmentId = 1
@@ -117,7 +118,8 @@ class DrivingsListFragment(val drivingsView: DrivingsActivityView): MvpAppCompat
 
     override fun initViewPager2(data: Pair<ArrayList<OrderWithStatus>, ArrayList<OrderWithStatus>>) {
         activity?.runOnUiThread {
-            binding.viewPager2DrivingsList.adapter = DrivingsListViewPager2Adapter(activity!!, data, this)
+            binding.viewPager2DrivingsList.adapter =
+                DrivingsListViewPager2Adapter(activity!!, data, this)
         }
     }
 
@@ -130,7 +132,7 @@ class DrivingsListFragment(val drivingsView: DrivingsActivityView): MvpAppCompat
     }
 
     override fun setRateAndActivate(id: Long, type: RateType) {
-        TODO("Not yet implemented")
+        presenter.setRateAndActivate(id, type)
     }
 
     override fun onDestroy() {

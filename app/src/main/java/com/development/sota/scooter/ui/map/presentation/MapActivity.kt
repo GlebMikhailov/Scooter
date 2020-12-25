@@ -1,7 +1,6 @@
 package com.development.sota.scooter.ui.map.presentation
 
 import android.Manifest
-import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.content.DialogInterface
 import android.content.Intent
@@ -13,16 +12,13 @@ import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import android.util.Log
 import android.view.View
-import android.view.ViewAnimationUtils
 import android.widget.Button
 import android.widget.Toast
-import android.widget.ViewAnimator
 import androidx.annotation.DrawableRes
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
-import com.development.sota.scooter.BASE_IMAGE_URL
 import com.development.sota.scooter.R
 import com.development.sota.scooter.databinding.ActivityMapBinding
 import com.development.sota.scooter.ui.drivings.DrivingsActivity
@@ -34,9 +30,7 @@ import com.development.sota.scooter.ui.map.data.Scooter
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.mapbox.core.constants.Constants
-import com.mapbox.geojson.Feature
-import com.mapbox.geojson.FeatureCollection
-import com.mapbox.geojson.LineString
+import com.mapbox.geojson.*
 import com.mapbox.geojson.Point
 import com.mapbox.mapboxsdk.Mapbox
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
@@ -45,17 +39,12 @@ import com.mapbox.mapboxsdk.geometry.LatLngBounds
 import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.maps.Style
 import com.mapbox.mapboxsdk.plugins.localization.LocalizationPlugin
-import com.mapbox.mapboxsdk.plugins.markerview.MarkerView
 import com.mapbox.mapboxsdk.plugins.markerview.MarkerViewManager
 import com.mapbox.mapboxsdk.style.expressions.Expression.*
-import com.mapbox.mapboxsdk.style.layers.CircleLayer
-import com.mapbox.mapboxsdk.style.layers.LineLayer
-import com.mapbox.mapboxsdk.style.layers.Property
+import com.mapbox.mapboxsdk.style.layers.*
 import com.mapbox.mapboxsdk.style.layers.PropertyFactory.*
-import com.mapbox.mapboxsdk.style.layers.SymbolLayer
 import com.mapbox.mapboxsdk.style.sources.GeoJsonOptions
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
-import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.item_popup_map.view.*
 import kotlinx.android.synthetic.main.item_scooter_driving.view.*
 import kotlinx.coroutines.GlobalScope
@@ -104,7 +93,7 @@ interface MapView : MvpView {
     fun sendToDrivingsList()
 
     @AddToEnd
-    fun updateState()
+    fun drawGeoZones(geoJson: FeatureCollection)
 }
 
 
@@ -117,7 +106,6 @@ class MapActivity : MvpAppCompatActivity(), MapView {
     private var map: MapboxMap? = null
     private lateinit var markerManager: MarkerViewManager
     private lateinit var localizationPlugin: LocalizationPlugin
-    private var myMarker: MarkerView? = null
     private lateinit var geoJsonSource: GeoJsonSource
 
     private val disposableJobsBag = hashSetOf<Job>()
@@ -175,7 +163,7 @@ class MapActivity : MvpAppCompatActivity(), MapView {
         binding.contentOfMap.mapScooterItem.constraintLayoutItemScooterParent.visibility = View.GONE
 
         binding.navView.setNavigationItemSelectedListener {
-            when(it.itemId) {
+            when (it.itemId) {
                 R.id.menuMapItemDrivings -> presenter.sendToTheDrivingsList()
             }
 
@@ -239,13 +227,15 @@ class MapActivity : MvpAppCompatActivity(), MapView {
                 if (mapClickScootersList.size == 1) {
                     val scooter = mapClickScootersList.first().getProperty("id").asLong
 
-                    if(currentShowingScooter != scooter) {
+                    if (currentShowingScooter != scooter) {
                         presenter.clickedOnScooterWith(id = scooter)
                     } else {
                         currentShowingScooter = -1L
                     }
                 } else {
                     currentShowingScooter = -1L
+
+                    presenter.scooterUnselected()
 
                     map.style?.removeLayer(ROUTE_LAYER)
                     map.style?.removeSource(ROUTE_SOURCE)
@@ -420,6 +410,7 @@ class MapActivity : MvpAppCompatActivity(), MapView {
                     LocationServices.getFusedLocationProviderClient(this).lastLocation.addOnSuccessListener {
                         if (it != null) {
                             val latLng = LatLng(it.latitude, it.longitude)
+                            presenter.position = latLng
 
                             map?.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 13.0))
 
@@ -440,6 +431,8 @@ class MapActivity : MvpAppCompatActivity(), MapView {
                                         iconIgnorePlacement(true)
                                     )
                             )
+
+
                         }
                     }
                 } catch (e: Exception) {
@@ -458,14 +451,15 @@ class MapActivity : MvpAppCompatActivity(), MapView {
             source.setGeoJson(LineString.fromPolyline(polyline, Constants.PRECISION_6))
             map?.style?.addSource(source)
 
-            map?.style?.addLayer(
+            map?.style?.addLayerBelow(
                 LineLayer(ROUTE_LAYER, ROUTE_SOURCE)
                     .withProperties(
                         lineCap(Property.LINE_CAP_ROUND),
                         lineJoin(Property.LINE_JOIN_ROUND),
                         lineWidth(5f),
                         lineColor(Color.parseColor("#0565D7"))
-                    )
+                    ),
+                SCOOTERS_LAYER
             )
         }
     }
@@ -473,7 +467,8 @@ class MapActivity : MvpAppCompatActivity(), MapView {
     override fun showScooterCard(scooter: Scooter, status: OrderStatus) {
         runOnUiThread {
             if (currentShowingScooter != scooter.id) {
-                binding.contentOfMap.mapScooterItem.constraintLayoutItemScooterParent.visibility = View.VISIBLE
+                binding.contentOfMap.mapScooterItem.constraintLayoutItemScooterParent.visibility =
+                    View.VISIBLE
                 binding.contentOfMap.mapScooterItem.cardViewScooterItem.visibility = View.VISIBLE
 
                 binding.contentOfMap.mapScooterItem.cardViewScooterItem.linnearLayoutScooterItemFinishButtons.visibility =
@@ -498,10 +493,15 @@ class MapActivity : MvpAppCompatActivity(), MapView {
                     OrderStatus.CANDIDIATE -> {
                         binding.contentOfMap.mapScooterItem.cardViewScooterItem.constraintLayoutScooterItemPopupRoute.visibility =
                             View.VISIBLE
+                        binding.contentOfMap.mapScooterItem.textViewItemScooterStateLabel.visibility =
+                            View.GONE
+                        binding.contentOfMap.mapScooterItem.textViewItemScooterStateValue.visibility =
+                            View.GONE
 
-
-                        binding.contentOfMap.mapScooterItem.cardViewScooterItem.textViewItemScooterMinutePricing.text = ""
-                        binding.contentOfMap.mapScooterItem.cardViewScooterItem.textViewtextViewItemScooterHourPricing.text = ""
+                        binding.contentOfMap.mapScooterItem.cardViewScooterItem.textViewItemScooterMinutePricing.text =
+                            ""
+                        binding.contentOfMap.mapScooterItem.cardViewScooterItem.textViewtextViewItemScooterHourPricing.text =
+                            ""
 
                         binding.contentOfMap.mapScooterItem.cardViewScooterItem.textViewItemScooterId.text =
                             "#${scooter.id}"
@@ -633,7 +633,8 @@ class MapActivity : MvpAppCompatActivity(), MapView {
                 binding.contentOfMap.mapPopupItem.constraintLayoutParentPopupMap.visibility =
                     View.GONE
             } else {
-                binding.contentOfMap.mapPopupItem.constraintLayoutParentPopupMap.visibility = View.VISIBLE
+                binding.contentOfMap.mapPopupItem.constraintLayoutParentPopupMap.visibility =
+                    View.VISIBLE
 
                 if (bookCount > 0 && rentCount == 0 || bookCount == 0 && rentCount > 0) {
                     binding.contentOfMap.mapPopupItem.textViewPopupMenuDownBordered.visibility =
@@ -652,9 +653,9 @@ class MapActivity : MvpAppCompatActivity(), MapView {
 
                         disposableJobsBag.add(
                             GlobalScope.launch {
-                                //TODO: Replace with rate
                                 while (true) {
-                                    val time = System.currentTimeMillis() - bookOrder.parseStartTime().time
+                                    val time =
+                                        System.currentTimeMillis() - bookOrder.parseStartTime().time
 
                                     val rawMinutes = TimeUnit.MILLISECONDS.toMinutes(time)
 
@@ -664,7 +665,7 @@ class MapActivity : MvpAppCompatActivity(), MapView {
 
                                     runOnUiThread {
                                         binding.contentOfMap.mapPopupItem.textViewPopupMenuUpValue.text =
-                                            String.format("%02d:%02d:%02d", hours, minutes, seconds)
+                                            String.format("%d:%02d:%02d", hours, minutes, seconds)
                                     }
 
                                     delay(1000)
@@ -688,7 +689,6 @@ class MapActivity : MvpAppCompatActivity(), MapView {
 
                         disposableJobsBag.add(
                             GlobalScope.launch {
-                                //TODO: Replace with rate
                                 while (true) {
                                     val time =
                                         System.currentTimeMillis() - rentOrder.parseStartTime().time
@@ -701,7 +701,7 @@ class MapActivity : MvpAppCompatActivity(), MapView {
 
                                     runOnUiThread {
                                         binding.contentOfMap.mapPopupItem.textViewPopupMenuUpValue.text =
-                                            String.format("%02d:%02d:%02d", hours, minutes, seconds)
+                                            String.format("%d:%02d:%02d", hours, minutes, seconds)
                                     }
 
                                     delay(1000)
@@ -709,7 +709,7 @@ class MapActivity : MvpAppCompatActivity(), MapView {
                                 //Server check
                             }
                         )
-                    } else if (rentCount >  1) {
+                    } else if (rentCount > 1) {
                         binding.contentOfMap.mapPopupItem.textViewPopupMenuUpBordered.text =
                             "${getString(R.string.map_rent)} $rentCount"
                         binding.contentOfMap.mapPopupItem.textViewPopupMenuUpValue.text =
@@ -734,9 +734,9 @@ class MapActivity : MvpAppCompatActivity(), MapView {
 
                         disposableJobsBag.add(
                             GlobalScope.launch {
-                                //TODO: Replace with rate
                                 while (true) {
-                                    val time = System.currentTimeMillis() - bookOrder.parseStartTime().time
+                                    val time =
+                                        System.currentTimeMillis() - bookOrder.parseStartTime().time
 
                                     val rawMinutes = TimeUnit.MILLISECONDS.toMinutes(time)
 
@@ -746,7 +746,7 @@ class MapActivity : MvpAppCompatActivity(), MapView {
 
                                     runOnUiThread {
                                         binding.contentOfMap.mapPopupItem.textViewPopupMenuUpValue.text =
-                                            String.format("%02d:%02d:%02d", hours, minutes, seconds)
+                                            String.format("%d:%02d:%02d", hours, minutes, seconds)
                                     }
 
                                     delay(1000)
@@ -770,7 +770,6 @@ class MapActivity : MvpAppCompatActivity(), MapView {
 
                         disposableJobsBag.add(
                             GlobalScope.launch {
-                                //TODO: Replace with rate
                                 while (true) {
                                     val time =
                                         System.currentTimeMillis() - rentOrder.parseStartTime().time
@@ -783,7 +782,7 @@ class MapActivity : MvpAppCompatActivity(), MapView {
 
                                     runOnUiThread {
                                         binding.contentOfMap.mapPopupItem.textViewPopupMenuDownValue.text =
-                                            String.format("%02d:%02d:%02d", hours, minutes, seconds)
+                                            String.format("%d:%02d:%02d", hours, minutes, seconds)
                                     }
 
                                     delay(1000)
@@ -804,9 +803,27 @@ class MapActivity : MvpAppCompatActivity(), MapView {
         }
     }
 
-    override fun updateState() {
+    override fun drawGeoZones(geoJson: FeatureCollection) {
         runOnUiThread {
+            map?.style?.removeLayer(GEOZONE_LAYER)
+            map?.style?.removeSource(GEOZONE_SOURCE)
 
+            geoJsonSource = GeoJsonSource(
+                GEOZONE_SOURCE,
+                geoJson,
+                GeoJsonOptions()
+            )
+
+            map?.style?.addSource(
+                geoJsonSource
+            )
+
+            val geoZoneLayer = FillLayer(GEOZONE_LAYER, GEOZONE_SOURCE)
+            geoZoneLayer.setProperties(
+                fillColor(GEOZONE_COLOR)
+            )
+
+            map?.style?.addLayer(geoZoneLayer)
         }
     }
 
@@ -904,8 +921,17 @@ class MapActivity : MvpAppCompatActivity(), MapView {
         const val COUNT_LAYER = "count"
         const val ROUTE_LAYER = "route"
         const val ROUTE_SOURCE = "route-source"
+        const val GEOZONE_LAYER = "geozone"
+        const val GEOZONE_SOURCE = "geozone-source"
 
-        const val MAX_BOOK_TIME = 900000L
+        val GEOZONE_COLOR = Color.parseColor("#40FF453A")
+        val GEOZONE_LINE_COLOR = Color.parseColor("#FF453A")
+        val PARKING_LINE_COLOR = Color.parseColor("#2F80ED")
+        val PARKING_BONUS_COLOR = Color.parseColor("#14D53D")
+
+        val TRANSPARENT_COLOR = Color.TRANSPARENT
+
+        val MAX_BOOK_TIME = 900000L
     }
 }
 

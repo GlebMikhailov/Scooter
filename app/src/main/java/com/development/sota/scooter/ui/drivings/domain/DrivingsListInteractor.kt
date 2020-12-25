@@ -1,5 +1,6 @@
 package com.development.sota.scooter.ui.drivings.domain
 
+import android.util.Log
 import com.development.sota.scooter.api.MapRetrofitProvider
 import com.development.sota.scooter.api.OrdersRetrofitProvider
 import com.development.sota.scooter.base.BaseInteractor
@@ -28,9 +29,11 @@ class DrivingsListInteractorImpl(private val presenter: DrivingsListPresenter) :
 
     override fun getAllOrdersAndScooters() {
         compositeDisposable.add(
-            Observables.zip(OrdersRetrofitProvider.service
-                .getOrders(sharedPreferences.getLong("id", -1L)),
-            MapRetrofitProvider.service.getScooters())
+            Observables.zip(
+                OrdersRetrofitProvider.service
+                    .getOrders(sharedPreferences.getLong("id", -1L)),
+                MapRetrofitProvider.service.getScooters()
+            )
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeBy(
@@ -91,7 +94,10 @@ class DrivingsListInteractorImpl(private val presenter: DrivingsListPresenter) :
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeBy(
                     onComplete = { presenter.actionEnded(true) { getAllOrdersAndScooters() } },
-                    onError = { presenter.actionEnded(false) }
+                    onError = {
+                        presenter.actionEnded(false)
+                        Log.w("Drivings server error", it.localizedMessage ?: "")
+                    }
                 )
         )
     }

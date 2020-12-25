@@ -45,7 +45,6 @@ class DrivingsPresenter(val context: Context) : MvpPresenter<DrivingsView>() {
         if (codeToTest != null) {
             if (this.scooters.count { it.id == codeToTest } != 0) {
                 fragmentDelegate?.gotResultOfCodeChecking(true)
-                TODO("Add driving and close fragment")
             } else {
                 fragmentDelegate?.gotResultOfCodeChecking(false)
             }

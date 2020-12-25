@@ -31,18 +31,48 @@ class DrivingsListPresenter(val context: Context) : MvpPresenter<DrivingsListVie
         ordersWithStatuses.clear()
         val finishedOrders = arrayListOf<OrderWithStatus>()
 
-        for(order in orders) {
-            when(order.status) {
+        for (order in orders) {
+            when (order.status) {
                 OrderStatus.CLOSED.value ->
-                    finishedOrders.add(OrderWithStatus(order, ordersAndScooters.second.first { it.id == order.scooter }, OrderStatus.CLOSED))
+                    finishedOrders.add(
+                        OrderWithStatus(
+                            order,
+                            ordersAndScooters.second.first { it.id == order.scooter },
+                            OrderStatus.CLOSED
+                        )
+                    )
                 OrderStatus.CANCELED.value ->
-                    finishedOrders.add(OrderWithStatus(order, ordersAndScooters.second.first { it.id == order.scooter }, OrderStatus.CANCELED))
+                    finishedOrders.add(
+                        OrderWithStatus(
+                            order,
+                            ordersAndScooters.second.first { it.id == order.scooter },
+                            OrderStatus.CANCELED
+                        )
+                    )
                 OrderStatus.BOOKED.value ->
-                    ordersWithStatuses.add(OrderWithStatus(order, ordersAndScooters.second.first { it.id == order.scooter }, OrderStatus.BOOKED))
+                    ordersWithStatuses.add(
+                        OrderWithStatus(
+                            order,
+                            ordersAndScooters.second.first { it.id == order.scooter },
+                            OrderStatus.BOOKED
+                        )
+                    )
                 OrderStatus.ACTIVATED.value ->
-                    ordersWithStatuses.add(OrderWithStatus(order, ordersAndScooters.second.first { it.id == order.scooter }, OrderStatus.ACTIVATED))
+                    ordersWithStatuses.add(
+                        OrderWithStatus(
+                            order,
+                            ordersAndScooters.second.first { it.id == order.scooter },
+                            OrderStatus.ACTIVATED
+                        )
+                    )
                 else ->
-                    ordersWithStatuses.add(OrderWithStatus(order, ordersAndScooters.second.first { it.id == order.scooter }, OrderStatus.CLOSED))
+                    ordersWithStatuses.add(
+                        OrderWithStatus(
+                            order,
+                            ordersAndScooters.second.first { it.id == order.scooter },
+                            OrderStatus.CLOSED
+                        )
+                    )
             }
         }
 
@@ -72,12 +102,13 @@ class DrivingsListPresenter(val context: Context) : MvpPresenter<DrivingsListVie
     }
 
     fun actionEnded(success: Boolean, actionToPerform: () -> Unit = {}) {
-        if(success) {
+        if (success) {
             actionToPerform()
         } else {
             viewState.showToast(context.getString(R.string.error_api))
         }
     }
+
     override fun onDestroyCalled() {
         interactor.disposeRequests()
     }

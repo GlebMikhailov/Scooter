@@ -27,7 +27,10 @@ interface DrivingsCodeView : MvpView {
     fun setColorOfPinView(state: DrivingsCodePinViewState)
 }
 
-class DrivingsCodeFragment(val drivingsView: DrivingsActivityView, val scooterToAdd: Scooter? = null) : MvpAppCompatFragment(),
+class DrivingsCodeFragment(
+    val drivingsView: DrivingsActivityView,
+    val scooterToAdd: Scooter? = null
+) : MvpAppCompatFragment(),
     DrivingsCodeView, DrivingsFragmentView {
     private val presenter by moxyPresenter { DrivingsCodePresenter() }
 
@@ -51,7 +54,10 @@ class DrivingsCodeFragment(val drivingsView: DrivingsActivityView, val scooterTo
             drivingsView.onBackPressedByType(DrivingsListFragmentType.CODE)
         }
 
-        //TODO: Add lantern support
+        binding.imageButtonDrivingsCodeScannerLantern.setOnClickListener {
+            drivingsView.toggleLantern()
+        }
+
         return binding.root
     }
 
@@ -75,8 +81,18 @@ class DrivingsCodeFragment(val drivingsView: DrivingsActivityView, val scooterTo
 
     override fun setColorOfPinView(state: DrivingsCodePinViewState) {
         activity?.runOnUiThread {
-            binding.drivingsCodePinView.setLineColor(ContextCompat.getColor(context!!, presenter.getPinViewColor(state)))
-            binding.drivingsCodePinView.setTextColor(ContextCompat.getColor(context!!, presenter.getPinViewColor(state)))
+            binding.drivingsCodePinView.setLineColor(
+                ContextCompat.getColor(
+                    context!!,
+                    presenter.getPinViewColor(state)
+                )
+            )
+            binding.drivingsCodePinView.setTextColor(
+                ContextCompat.getColor(
+                    context!!,
+                    presenter.getPinViewColor(state)
+                )
+            )
         }
     }
 

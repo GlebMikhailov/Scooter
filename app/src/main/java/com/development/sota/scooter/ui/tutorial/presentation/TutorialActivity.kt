@@ -3,7 +3,6 @@ package com.development.sota.scooter.ui.tutorial.presentation
 import android.content.Intent
 import android.os.Bundle
 import com.development.sota.scooter.MainActivity
-import com.development.sota.scooter.R
 import com.development.sota.scooter.databinding.ActivityTutorialBinding
 import moxy.MvpAppCompatActivity
 import moxy.MvpView

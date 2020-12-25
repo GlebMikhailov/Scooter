@@ -92,7 +92,7 @@
     <string name="menu_help">Помощь</string>
     <string name="menu_greeting">Привет, мы рады видеть тебя!</string>
     <string name="menu_balance">Баланс:</string>
-    
+
     <string name="dialog_attention">Внимание</string>
     <string name="dialog_block_book">Вы превысили лимит бронирования. Бронь будет доступная через 24 часа. Пока вам доступна только активация.</string>
     <string name="dialog_balance">Пополнение баланса</string>

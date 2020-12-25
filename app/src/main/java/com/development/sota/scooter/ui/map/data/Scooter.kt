@@ -1,25 +1,25 @@
 package com.development.sota.scooter.ui.map.data
 
 import com.development.sota.scooter.R
+import com.google.gson.annotations.SerializedName
 import com.mapbox.mapboxsdk.geometry.LatLng
-import com.squareup.moshi.Json
 
 
 data class Scooter(
     val id: Long,
-    @Json(name = "scooter_name") val name: String,
+    @SerializedName("scooter_name") val name: String,
     val status: String,
-    @Json(name = "alert_status") val alertStatus: String,
+    @SerializedName("alert_status") val alertStatus: String,
     val battery: Double, // Max: 60000.0
     val latitude: Double,
     val longitude: Double,
     val description: String,
     val photo: String?,
-    @Json(name = "tracker_id") val trackerId: String,
-    @Json(name = "speed_limit") val speedLimit: Double,
+    @SerializedName("tracker_id") val trackerId: String,
+    @SerializedName("speed_limit") val speedLimit: Double,
     val lamp: Boolean,
     val engine: Boolean,
-    @Json(name = "scooter_group") val scooterGroup: List<Int>,
+    @SerializedName("scooter_group") val scooterGroup: List<Int>,
     val rate: Int
 ) {
     fun getScooterIcon(): Int {

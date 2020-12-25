@@ -8,22 +8,23 @@ import android.view.ViewGroup
 import androidx.cardview.widget.CardView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
-import com.development.sota.scooter.BASE_IMAGE_URL
 import com.development.sota.scooter.R
 import com.development.sota.scooter.ui.drivings.DrivingsActivity
 import com.development.sota.scooter.ui.drivings.domain.entities.OrderStatus
 import com.development.sota.scooter.ui.drivings.domain.entities.OrderWithStatus
-import com.squareup.picasso.Picasso
+import com.development.sota.scooter.ui.map.data.RateType
 import kotlinx.android.synthetic.main.item_scooter_driving.view.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.util.*
 import java.util.concurrent.TimeUnit
-import kotlin.collections.ArrayList
 
-class OrdersAdapter(var data: ArrayList<OrderWithStatus>, val context: Context, val manipulatorDelegate: OrderManipulatorDelegate) :
+class OrdersAdapter(
+    var data: ArrayList<OrderWithStatus>,
+    val context: Context,
+    val manipulatorDelegate: OrderManipulatorDelegate
+) :
     RecyclerView.Adapter<OrdersAdapter.OrdersViewHolder>() {
     private val tickerJobs = hashMapOf<Long, Job>()
 
@@ -56,7 +57,7 @@ class OrdersAdapter(var data: ArrayList<OrderWithStatus>, val context: Context, 
                     tickerJobs[data[position].order.id]?.cancel()
                 }
 
-                holder.cardView.buttonItemScooterFirstActivate.setOnClickListener {
+                holder.cardView.buttonScooterItemActivate.setOnClickListener {
                     Log.w("FIRST ACTIVATE", "CLICK")
                     data[position].status = OrderStatus.CHOOSE_RATE
 
@@ -82,10 +83,11 @@ class OrdersAdapter(var data: ArrayList<OrderWithStatus>, val context: Context, 
 
                             (context as DrivingsActivity).runOnUiThread {
                                 holder.cardView.textViewItemScooterStateValue.text =
-                                    String.format("%02d:%02d:%02d", hours, minutes, seconds)
+                                    String.format("%d:%02d:%02d", hours, minutes, seconds)
                             }
                         }
-                    } catch (e: Exception) {}
+                    } catch (e: Exception) {
+                    }
                 }
             }
 
@@ -93,33 +95,35 @@ class OrdersAdapter(var data: ArrayList<OrderWithStatus>, val context: Context, 
                 holder.cardView.linnearLayoutScooterItemRentButtons.visibility = View.VISIBLE
                 holder.cardView.textViewItemScooterStateLabel.setText(R.string.scooter_booked)
 
-                holder.cardView.buttonScooterItemCancelBook.setOnClickListener {
-                    manipulatorDelegate.cancelOrder(data[position].order.id)
+                holder.cardView.buttonScooterItemPerMinute.setOnClickListener {
+                    manipulatorDelegate.setRateAndActivate(data[position].order.id, RateType.MINUTE)
                 }
 
-                holder.cardView.buttonItemScooterFirstActivate.setOnClickListener {
-                    manipulatorDelegate.activateOrder(data[position].order.id)
+                holder.cardView.textViewtextViewItemScooterHourPricing.setOnClickListener {
+                    manipulatorDelegate.setRateAndActivate(data[position].order.id, RateType.HOUR)
                 }
 
                 tickerJobs[data[position].order.id] = GlobalScope.launch {
                     try {
-                    while (true) {
-                        val time = System.currentTimeMillis() - data[position].order.parseStartTime().time
+                        while (true) {
+                            val time =
+                                System.currentTimeMillis() - data[position].order.parseStartTime().time
 
-                        val rawMinutes = TimeUnit.MILLISECONDS.toMinutes(time)
+                            val rawMinutes = TimeUnit.MILLISECONDS.toMinutes(time)
 
-                        val hours = rawMinutes / 60
-                        val minutes = rawMinutes % 60
-                        val seconds = time / 1000 - minutes * 60 - hours * 3600
+                            val hours = rawMinutes / 60
+                            val minutes = rawMinutes % 60
+                            val seconds = time / 1000 - minutes * 60 - hours * 3600
 
-                        delay(1000)
+                            delay(1000)
 
-                        (context as DrivingsActivity).runOnUiThread {
-                            holder.cardView.textViewItemScooterStateValue.text =
-                                String.format("%02d:%02d:%02d", hours, minutes, seconds)
+                            (context as DrivingsActivity).runOnUiThread {
+                                holder.cardView.textViewItemScooterStateValue.text =
+                                    String.format("%d:%02d:%02d", hours, minutes, seconds)
+                            }
                         }
+                    } catch (e: Exception) {
                     }
-                    } catch (e: Exception) {}
                 }
             }
 
@@ -127,6 +131,15 @@ class OrdersAdapter(var data: ArrayList<OrderWithStatus>, val context: Context, 
                 tickerJobs[data[position].order.id]?.cancel()
 
                 holder.cardView.linnearLayoutScooterItemFinishButtons.visibility = View.VISIBLE
+
+                holder.cardView.buttonScooterItemPause.setOnClickListener {
+                    //  manipulatorDelegate.setRateAndActivate(data[position].order.id, RateType.MINUTE)
+                }
+
+                holder.cardView.buttonScooterFinish.setOnClickListener {
+                    //  manipulatorDelegate.setRateAndActivate(data[position].order.id, RateType.HOUR)
+                }
+
                 holder.cardView.textViewItemScooterStateLabel.setText(R.string.scooter_rented)
                 holder.cardView.textViewItemScooterStateValue.text =
                     String.format("%.2f", data[position].order.cost)

@@ -7,7 +7,6 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.development.sota.scooter.R
-import com.development.sota.scooter.ui.drivings.domain.entities.Order
 import com.development.sota.scooter.ui.drivings.domain.entities.OrderWithStatus
 import kotlinx.android.synthetic.main.item_drivings_list.view.*
 
@@ -28,7 +27,11 @@ class DrivingsListViewPager2Adapter(
     override fun onBindViewHolder(holder: DrivingsListViewPager2ViewHolder, position: Int) =
         holder.itemView.run {
             recyclerViewItemDrivingsList.layoutManager = LinearLayoutManager(context)
-            recyclerViewItemDrivingsList.adapter = if(position == 0) OrdersAdapter(data.first, context, manipulatorDelegate) else FinishedOrderAdapter(data.second, context)
+            recyclerViewItemDrivingsList.adapter = if (position == 0) OrdersAdapter(
+                data.first,
+                context,
+                manipulatorDelegate
+            ) else FinishedOrderAdapter(data.second, context)
         }
 
     override fun getItemCount(): Int = 2

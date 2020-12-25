@@ -1,8 +1,5 @@
 package com.development.sota.scooter.util
 
-import android.content.res.Resources
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.util.Log
 import okhttp3.Interceptor
 import okhttp3.Request

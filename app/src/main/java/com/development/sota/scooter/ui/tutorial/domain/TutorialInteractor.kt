@@ -1,6 +1,5 @@
 package com.development.sota.scooter.ui.tutorial.domain
 
-import android.content.Context
 import com.development.sota.scooter.base.BaseInteractor
 import com.development.sota.scooter.db.SharedPreferencesProvider
 import com.development.sota.scooter.ui.tutorial.presentation.TutorialPresenter

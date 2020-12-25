@@ -18,6 +18,7 @@ interface DrivingsInteractor : BaseInteractor {
     fun addOrder(order: Order)
     fun removeOrder(orderId: Long)
     fun activateOrder(orderId: Long)
+    fun putScooterCodeToShow(code: Long)
 }
 
 class DrivingsInteractorImpl(private val presenter: DrivingsPresenter) : DrivingsInteractor {
@@ -49,12 +50,12 @@ class DrivingsInteractorImpl(private val presenter: DrivingsPresenter) : Driving
             OrdersRetrofitProvider.service
                 .addOrder(
                     startTime = order.startTime,
-                    scooterId =  order.scooter,
+                    scooterId = order.scooter,
                     clientId = sharedPreferences.getLong("id", -1)
                 )
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribeBy ( )
+                .subscribeBy()
         )
     }
 
@@ -72,6 +73,10 @@ class DrivingsInteractorImpl(private val presenter: DrivingsPresenter) : Driving
 
     override fun activateOrder(orderId: Long) {
         TODO("Not yet implemented")
+    }
+
+    override fun putScooterCodeToShow(code: Long) {
+        sharedPreferences.edit().putLong("scooter_show", code).apply()
     }
 
     override fun disposeRequests() {
