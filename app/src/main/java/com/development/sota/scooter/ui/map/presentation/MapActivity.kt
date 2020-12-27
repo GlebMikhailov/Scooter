@@ -472,31 +472,34 @@ class MapActivity : MvpAppCompatActivity(), MapView {
                 binding.contentOfMap.mapScooterItem.cardViewScooterItem.visibility = View.VISIBLE
 
                 binding.contentOfMap.mapScooterItem.cardViewScooterItem.linnearLayoutScooterItemFinishButtons.visibility =
-                    View.INVISIBLE
+                    View.GONE
                 binding.contentOfMap.mapScooterItem.cardViewScooterItem.linnearLayoutScooterItemBookingButtons.visibility =
-                    View.INVISIBLE
+                    View.GONE
                 binding.contentOfMap.mapScooterItem.cardViewScooterItem.linnearLayoutScooterItemRentButtons.visibility =
-                    View.INVISIBLE
+                    View.GONE
                 binding.contentOfMap.mapScooterItem.cardViewScooterItem.linnearLayoutScooterItemFirstBookButtons.visibility =
-                    View.INVISIBLE
+                    View.GONE
 
                 binding.contentOfMap.mapScooterItem.cardViewScooterItem.constraintLayoutScooterItemPopupRoute.visibility =
-                    View.INVISIBLE
+                    View.GONE
                 binding.contentOfMap.mapScooterItem.cardViewScooterItem.constraintLayoutScooterItemPopupLock.visibility =
-                    View.INVISIBLE
+                    View.GONE
                 binding.contentOfMap.mapScooterItem.cardViewScooterItem.constraintLayoutScooterItemPopupSignal.visibility =
-                    View.INVISIBLE
+                    View.GONE
+
                 binding.contentOfMap.mapScooterItem.cardViewScooterItem.linnearLayoutScooterItemFirstBookButtons.visibility =
                     View.VISIBLE
 
                 when (status) {
                     OrderStatus.CANDIDIATE -> {
-                        binding.contentOfMap.mapScooterItem.cardViewScooterItem.constraintLayoutScooterItemPopupRoute.visibility =
-                            View.VISIBLE
                         binding.contentOfMap.mapScooterItem.textViewItemScooterStateLabel.visibility =
                             View.GONE
                         binding.contentOfMap.mapScooterItem.textViewItemScooterStateValue.visibility =
                             View.GONE
+
+                        binding.contentOfMap.mapScooterItem.cardViewScooterItem.constraintLayoutScooterItemPopupRouteBackgroundless.visibility = View.VISIBLE
+                        binding.contentOfMap.mapScooterItem.cardViewScooterItem.constraintLayoutScooterItemPopupRouteBackgroundless.clipToOutline = true
+                        binding.contentOfMap.mapScooterItem.cardViewScooterItem.constraintLayoutScooterItemPopupRouteBackgroundless.imageView2Backgroundless.clipToOutline = true
 
                         binding.contentOfMap.mapScooterItem.cardViewScooterItem.textViewItemScooterMinutePricing.text =
                             ""
