@@ -1,9 +1,13 @@
 package com.development.sota.scooter.ui.drivings.domain.entities
 
 import android.annotation.SuppressLint
+import android.util.Log
 import com.development.sota.scooter.ui.map.data.Scooter
 import com.google.gson.annotations.SerializedName
 import java.text.SimpleDateFormat
+import java.time.Instant
+import java.time.ZoneId
+import java.time.ZoneOffset
 import java.util.*
 
 data class Order(
@@ -24,8 +28,15 @@ data class Order(
             SimpleDateFormat("yyyy-MM-dd'T'HH:mm:SSSS'Z'", Locale.getDefault())
     }
 
-    fun parseStartTime(): Date {
-        return decodeDateFormatter.parse(startTime) ?: Date()
+    fun parseStartTime(): Long? {
+        return try {
+            val tz = TimeZone.getDefault()
+            val now = Date()
+
+            return Instant.parse(startTime).toEpochMilli() - tz.getOffset(now.time)
+        } catch (e: Exception) {
+            null
+        }
     }
 
     fun parseEndTime(): Date {

@@ -39,6 +39,7 @@
                 android:background="@drawable/ic_white_map_popup"
                 android:cropToPadding="true"
                 android:outlineProvider="background"
+                android:scaleType="centerInside"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
@@ -75,14 +76,16 @@
                         android:paddingTop="8dp"
                         android:paddingEnd="4dp"
                         android:paddingBottom="8dp"
+                        android:scaleX="0.8"
+                        android:scaleY="0.8"
                         android:text="TextView"
                         android:textColor="@color/purple_secondary_text"
-                        android:textSize="16sp" />
+                        android:textSize="16dp" />
 
                     <Space
                         android:id="@+id/spacerPopupMap1"
                         android:layout_width="match_parent"
-                        android:layout_height="8dp"
+                        android:layout_height="4dp"
                         android:layout_weight="1" />
 
                     <TextView
@@ -96,9 +99,11 @@
                         android:paddingTop="8dp"
                         android:paddingEnd="4dp"
                         android:paddingBottom="8dp"
+                        android:scaleX="0.8"
+                        android:scaleY="0.8"
                         android:text="TextView"
                         android:textColor="@color/purple_secondary_text"
-                        android:textSize="16sp"
+                        android:textSize="16dp"
                         android:visibility="visible" />
 
                 </LinearLayout>
@@ -121,7 +126,7 @@
                         android:paddingBottom="4dp"
                         android:text="TextView"
                         android:textColor="@android:color/black"
-                        android:textSize="18sp" />
+                        android:textSize="18dp" />
 
                     <Space
                         android:id="@+id/spacerPopupMap2"
@@ -140,7 +145,7 @@
                         android:paddingBottom="4dp"
                         android:text="TextView"
                         android:textColor="@android:color/black"
-                        android:textSize="18sp" />
+                        android:textSize="18dp" />
 
                 </LinearLayout>
             </LinearLayout>

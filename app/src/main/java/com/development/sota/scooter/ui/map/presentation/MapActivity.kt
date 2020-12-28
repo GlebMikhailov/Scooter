@@ -56,6 +56,8 @@ import moxy.MvpView
 import moxy.ktx.moxyPresenter
 import moxy.viewstate.strategy.alias.AddToEnd
 import timber.log.Timber
+import java.time.LocalDateTime
+import java.time.ZoneId
 import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.collections.ArrayList
@@ -656,22 +658,31 @@ class MapActivity : MvpAppCompatActivity(), MapView {
 
                         disposableJobsBag.add(
                             GlobalScope.launch {
+                                val orderTime = bookOrder.parseStartTime()
+
                                 while (true) {
-                                    val time =
-                                        System.currentTimeMillis() - bookOrder.parseStartTime().time
 
-                                    val rawMinutes = TimeUnit.MILLISECONDS.toMinutes(time)
+                                    if (orderTime != null) {
+                                        val time =
+                                            LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli() - orderTime
+                                        val rawMinutes = TimeUnit.MILLISECONDS.toMinutes(time)
 
-                                    val hours = rawMinutes / 60
-                                    val minutes = rawMinutes % 60
-                                    val seconds = time / 1000 - minutes * 60 - hours * 3600
+                                        val hours = rawMinutes / 60
+                                        val minutes = rawMinutes % 60
+                                        val seconds = time / 1000 - minutes * 60 - hours * 3600
 
-                                    runOnUiThread {
-                                        binding.contentOfMap.mapPopupItem.textViewPopupMenuUpValue.text =
-                                            String.format("%d:%02d:%02d", hours, minutes, seconds)
+                                        runOnUiThread {
+                                            binding.contentOfMap.mapPopupItem.textViewPopupMenuUpValue.text =
+                                                String.format(
+                                                    "%d:%02d:%02d",
+                                                    hours,
+                                                    minutes,
+                                                    seconds
+                                                )
+                                        }
                                     }
+                                        delay(1000)
 
-                                    delay(1000)
                                 }
                                 //Server check
                             }
@@ -692,22 +703,31 @@ class MapActivity : MvpAppCompatActivity(), MapView {
 
                         disposableJobsBag.add(
                             GlobalScope.launch {
+                                val orderTime = rentOrder.parseStartTime()
+
                                 while (true) {
-                                    val time =
-                                        System.currentTimeMillis() - rentOrder.parseStartTime().time
 
-                                    val rawMinutes = TimeUnit.MILLISECONDS.toMinutes(time)
+                                    if (orderTime != null) {
+                                        val time =
+                                            LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli() - orderTime
+                                        val rawMinutes = TimeUnit.MILLISECONDS.toMinutes(time)
 
-                                    val hours = rawMinutes / 60
-                                    val minutes = rawMinutes % 60
-                                    val seconds = time / 1000 - minutes * 60 - hours * 3600
+                                        val hours = rawMinutes / 60
+                                        val minutes = rawMinutes % 60
+                                        val seconds = time / 1000 - minutes * 60 - hours * 3600
 
-                                    runOnUiThread {
-                                        binding.contentOfMap.mapPopupItem.textViewPopupMenuUpValue.text =
-                                            String.format("%d:%02d:%02d", hours, minutes, seconds)
+                                        runOnUiThread {
+                                            binding.contentOfMap.mapPopupItem.textViewPopupMenuUpValue.text =
+                                                String.format(
+                                                    "%d:%02d:%02d",
+                                                    hours,
+                                                    minutes,
+                                                    seconds
+                                                )
+                                        }
                                     }
+                                        delay(1000)
 
-                                    delay(1000)
                                 }
                                 //Server check
                             }
@@ -737,22 +757,31 @@ class MapActivity : MvpAppCompatActivity(), MapView {
 
                         disposableJobsBag.add(
                             GlobalScope.launch {
+                                val orderTime = bookOrder.parseStartTime()
+
                                 while (true) {
-                                    val time =
-                                        System.currentTimeMillis() - bookOrder.parseStartTime().time
 
-                                    val rawMinutes = TimeUnit.MILLISECONDS.toMinutes(time)
+                                    if (orderTime != null) {
+                                        val time =
+                                            LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli() - orderTime
+                                        val rawMinutes = TimeUnit.MILLISECONDS.toMinutes(time)
 
-                                    val hours = rawMinutes / 60
-                                    val minutes = rawMinutes % 60
-                                    val seconds = time / 1000 - minutes * 60 - hours * 3600
+                                        val hours = rawMinutes / 60
+                                        val minutes = rawMinutes % 60
+                                        val seconds = time / 1000 - minutes * 60 - hours * 3600
 
-                                    runOnUiThread {
-                                        binding.contentOfMap.mapPopupItem.textViewPopupMenuUpValue.text =
-                                            String.format("%d:%02d:%02d", hours, minutes, seconds)
+                                        runOnUiThread {
+                                            binding.contentOfMap.mapPopupItem.textViewPopupMenuUpValue.text =
+                                                String.format(
+                                                    "%d:%02d:%02d",
+                                                    hours,
+                                                    minutes,
+                                                    seconds
+                                                )
+                                        }
                                     }
+                                        delay(1000)
 
-                                    delay(1000)
                                 }
                                 //Server check
                             }
@@ -773,19 +802,28 @@ class MapActivity : MvpAppCompatActivity(), MapView {
 
                         disposableJobsBag.add(
                             GlobalScope.launch {
+                                val orderTime = rentOrder.parseStartTime()
+
                                 while (true) {
-                                    val time =
-                                        System.currentTimeMillis() - rentOrder.parseStartTime().time
 
-                                    val rawMinutes = TimeUnit.MILLISECONDS.toMinutes(time)
+                                    if(orderTime != null) {
+                                        val time =
+                                            LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli() - orderTime
+                                        val rawMinutes = TimeUnit.MILLISECONDS.toMinutes(time)
 
-                                    val hours = rawMinutes / 60
-                                    val minutes = rawMinutes % 60
-                                    val seconds = time / 1000 - minutes * 60 - hours * 3600
+                                        val hours = rawMinutes / 60
+                                        val minutes = rawMinutes % 60
+                                        val seconds = time / 1000 - minutes * 60 - hours * 3600
 
-                                    runOnUiThread {
-                                        binding.contentOfMap.mapPopupItem.textViewPopupMenuDownValue.text =
-                                            String.format("%d:%02d:%02d", hours, minutes, seconds)
+                                        runOnUiThread {
+                                            binding.contentOfMap.mapPopupItem.textViewPopupMenuDownValue.text =
+                                                String.format(
+                                                    "%d:%02d:%02d",
+                                                    hours,
+                                                    minutes,
+                                                    seconds
+                                                )
+                                        }
                                     }
 
                                     delay(1000)

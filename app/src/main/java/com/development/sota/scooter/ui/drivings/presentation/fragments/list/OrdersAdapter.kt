@@ -18,7 +18,11 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.util.*
 import java.util.concurrent.TimeUnit
+import kotlin.collections.ArrayList
 
 class OrdersAdapter(
     var data: ArrayList<OrderWithStatus>,
@@ -69,22 +73,27 @@ class OrdersAdapter(
 
                 tickerJobs[data[position].order.id] = GlobalScope.launch {
                     try {
+                        val orderTime = data[position].order.parseStartTime()
+
                         while (true) {
-                            val time =
-                                System.currentTimeMillis() - data[position].order.parseStartTime().time
 
-                            val rawMinutes = TimeUnit.MILLISECONDS.toMinutes(time)
+                            if(orderTime != null) {
+                                val time =
+                                    LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli() - orderTime
 
-                            val hours = rawMinutes / 60
-                            val minutes = rawMinutes % 60
-                            val seconds = time / 1000 - minutes * 60 - hours * 3600
+                                val rawMinutes = TimeUnit.MILLISECONDS.toMinutes(time)
+
+                                val hours = rawMinutes / 60
+                                val minutes = rawMinutes % 60
+                                val seconds = time / 1000 - minutes * 60 - hours * 3600
+
+                                (context as DrivingsActivity).runOnUiThread {
+                                    holder.cardView.textViewItemScooterStateValue.text =
+                                        String.format("%d:%02d:%02d", hours, minutes, seconds)
+                                }
+                            }
 
                             delay(1000)
-
-                            (context as DrivingsActivity).runOnUiThread {
-                                holder.cardView.textViewItemScooterStateValue.text =
-                                    String.format("%d:%02d:%02d", hours, minutes, seconds)
-                            }
                         }
                     } catch (e: Exception) {
                     }
@@ -105,22 +114,27 @@ class OrdersAdapter(
 
                 tickerJobs[data[position].order.id] = GlobalScope.launch {
                     try {
+                        val orderTime = data[position].order.parseStartTime()
+
                         while (true) {
-                            val time =
-                                System.currentTimeMillis() - data[position].order.parseStartTime().time
 
-                            val rawMinutes = TimeUnit.MILLISECONDS.toMinutes(time)
+                            if(orderTime != null) {
+                                val time =
+                                    LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli() - orderTime
+                                val rawMinutes = TimeUnit.MILLISECONDS.toMinutes(time)
 
-                            val hours = rawMinutes / 60
-                            val minutes = rawMinutes % 60
-                            val seconds = time / 1000 - minutes * 60 - hours * 3600
+                                val hours = rawMinutes / 60
+                                val minutes = rawMinutes % 60
+                                val seconds = time / 1000 - minutes * 60 - hours * 3600
 
-                            delay(1000)
 
-                            (context as DrivingsActivity).runOnUiThread {
-                                holder.cardView.textViewItemScooterStateValue.text =
-                                    String.format("%d:%02d:%02d", hours, minutes, seconds)
+
+                                (context as DrivingsActivity).runOnUiThread {
+                                    holder.cardView.textViewItemScooterStateValue.text =
+                                        String.format("%d:%02d:%02d", hours, minutes, seconds)
+                                }
                             }
+                            delay(1000)
                         }
                     } catch (e: Exception) {
                     }

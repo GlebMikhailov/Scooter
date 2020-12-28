@@ -14,7 +14,7 @@
         android:layout_marginEnd="16dp"
         android:text="@string/menu_greeting"
         android:textColor="@color/white"
-        android:textSize="18sp"
+        android:textSize="18dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -27,7 +27,7 @@
         android:layout_marginTop="16dp"
         android:text="Иван"
         android:textColor="@color/white"
-        android:textSize="32sp"
+        android:textSize="32dp"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView5" />
@@ -40,7 +40,7 @@
         android:layout_marginBottom="32dp"
         android:text="@string/menu_balance"
         android:textColor="@color/white"
-        android:textSize="18sp"
+        android:textSize="18dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="@+id/textView6"
         app:layout_constraintTop_toBottomOf="@+id/textView6" />
@@ -54,7 +54,7 @@
         android:padding="8dp"
         android:text="0.00 ₽ "
         android:textColor="@color/purple_text"
-        android:textSize="24sp"
+        android:textSize="24dp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="@+id/textView7"
         app:layout_constraintStart_toEndOf="@+id/textView7"
