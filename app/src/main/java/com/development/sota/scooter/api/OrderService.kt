@@ -20,7 +20,7 @@ interface OrderService {
         @Field("client") clientId: Long
     ): Observable<AddOrderResponse>
 
-    @POST("activateOrder/")
+    @POST("activateRent/")
     @FormUrlEncoded
     fun activateOrder(
         @Field("id") orderId: Long

@@ -98,8 +98,17 @@ class DrivingsListPresenter(val context: Context) : MvpPresenter<DrivingsListVie
     }
 
     fun setRateAndActivate(id: Long, type: RateType) {
+        viewState.setLoading(true)
+
         interactor.setRateAndActivateOrder(id, type)
     }
+
+    fun closeOrder(id: Long) {
+        viewState.setLoading(true)
+
+        interactor.closeOrder(id)
+    }
+
 
     fun actionEnded(success: Boolean, actionToPerform: () -> Unit = {}) {
         if (success) {

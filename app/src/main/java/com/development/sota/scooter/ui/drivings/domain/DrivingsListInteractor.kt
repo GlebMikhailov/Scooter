@@ -20,6 +20,7 @@ interface DrivingsListInteractor : BaseInteractor {
     fun cancelOrder(orderId: Long)
     fun activateOrder(orderId: Long)
     fun setRateAndActivateOrder(orderId: Long, type: RateType)
+    fun closeOrder(orderId: Long)
 }
 
 class DrivingsListInteractorImpl(private val presenter: DrivingsListPresenter) :
@@ -98,6 +99,21 @@ class DrivingsListInteractorImpl(private val presenter: DrivingsListPresenter) :
                         presenter.actionEnded(false)
                         Log.w("Drivings server error", it.localizedMessage ?: "")
                     }
+                )
+        )
+    }
+
+    override fun closeOrder(orderId: Long) {
+        compositeDisposable.add(
+            OrdersRetrofitProvider.service
+                .closeOrder(
+                    orderId
+                )
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeBy(
+                    onComplete = { presenter.actionEnded(true) { getAllOrdersAndScooters() } },
+                    onError = { presenter.actionEnded(false) }
                 )
         )
     }

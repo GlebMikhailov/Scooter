@@ -7,11 +7,11 @@
     android:id="@+id/constraintLayoutItemScooterParent"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:layout_margin="4dp"
     android:background="@drawable/ic_scooter_gradient"
     android:clipToPadding="false"
     android:elevation="8dp"
-    android:outlineProvider="background"
-    android:padding="4dp">
+    android:outlineProvider="background">
 
     <androidx.cardview.widget.CardView
         android:id="@+id/cardViewScooterItem"
@@ -81,12 +81,11 @@
                 android:id="@+id/textViewItemScooterStateValue"
                 android:layout_width="wrap_content"
                 android:layout_height="27dp"
-                android:layout_marginStart="16dp"
+                android:layout_marginStart="8dp"
                 android:fontFamily="@font/roboto"
                 android:textColor="@color/purple_text"
                 android:textSize="20dp"
                 app:layout_constraintBottom_toBottomOf="@+id/textViewItemScooterStateLabel"
-                app:layout_constraintEnd_toStartOf="@+id/imageViewScooterItemIcon"
                 app:layout_constraintStart_toEndOf="@+id/textViewItemScooterStateLabel"
                 app:layout_constraintTop_toTopOf="@+id/textViewItemScooterStateLabel" />
 

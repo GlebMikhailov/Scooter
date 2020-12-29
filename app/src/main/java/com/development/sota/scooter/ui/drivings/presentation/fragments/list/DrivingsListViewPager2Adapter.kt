@@ -6,9 +6,11 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.viewpager.widget.PagerAdapter.POSITION_NONE
 import com.development.sota.scooter.R
 import com.development.sota.scooter.ui.drivings.domain.entities.OrderWithStatus
 import kotlinx.android.synthetic.main.item_drivings_list.view.*
+
 
 class DrivingsListViewPager2Adapter(
     private val context: Context,

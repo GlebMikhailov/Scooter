@@ -17,6 +17,7 @@ import moxy.MvpAppCompatFragment
 import moxy.MvpView
 import moxy.ktx.moxyPresenter
 import moxy.viewstate.strategy.alias.AddToEnd
+import okhttp3.internal.notifyAll
 
 interface DrivingsListView : MvpView {
     @AddToEnd
@@ -35,6 +36,8 @@ interface OrderManipulatorDelegate {
     fun activateOrder(id: Long)
 
     fun setRateAndActivate(id: Long, type: RateType)
+    
+    fun closeOrder(id: Long)
 }
 
 class DrivingsListFragment(val drivingsView: DrivingsActivityView) : MvpAppCompatFragment(),
@@ -47,6 +50,7 @@ class DrivingsListFragment(val drivingsView: DrivingsActivityView) : MvpAppCompa
 
     private var _binding: FragmentDrivingsListBinding? = null
     private val binding get() = _binding!!
+    private var adapter: DrivingsListViewPager2Adapter? = null
 
     private var segmentId = 0
 
@@ -118,8 +122,9 @@ class DrivingsListFragment(val drivingsView: DrivingsActivityView) : MvpAppCompa
 
     override fun initViewPager2(data: Pair<ArrayList<OrderWithStatus>, ArrayList<OrderWithStatus>>) {
         activity?.runOnUiThread {
-            binding.viewPager2DrivingsList.adapter =
-                DrivingsListViewPager2Adapter(activity!!, data, this)
+            adapter = DrivingsListViewPager2Adapter(activity!!, data, this)
+            binding.viewPager2DrivingsList.adapter = adapter
+            binding.viewPager2DrivingsList.requestTransform()
         }
     }
 
@@ -133,6 +138,10 @@ class DrivingsListFragment(val drivingsView: DrivingsActivityView) : MvpAppCompa
 
     override fun setRateAndActivate(id: Long, type: RateType) {
         presenter.setRateAndActivate(id, type)
+    }
+
+    override fun closeOrder(id: Long) {
+        presenter.closeOrder(id)
     }
 
     override fun onDestroy() {

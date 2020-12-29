@@ -108,7 +108,7 @@ class OrdersAdapter(
                     manipulatorDelegate.setRateAndActivate(data[position].order.id, RateType.MINUTE)
                 }
 
-                holder.cardView.textViewtextViewItemScooterHourPricing.setOnClickListener {
+                holder.cardView.buttonScooterPerHour.setOnClickListener {
                     manipulatorDelegate.setRateAndActivate(data[position].order.id, RateType.HOUR)
                 }
 
@@ -151,12 +151,12 @@ class OrdersAdapter(
                 }
 
                 holder.cardView.buttonScooterFinish.setOnClickListener {
-                    //  manipulatorDelegate.setRateAndActivate(data[position].order.id, RateType.HOUR)
+                    manipulatorDelegate.closeOrder(data[position].order.id)
                 }
 
                 holder.cardView.textViewItemScooterStateLabel.setText(R.string.scooter_rented)
                 holder.cardView.textViewItemScooterStateValue.text =
-                    String.format("%.2f", data[position].order.cost)
+                    String.format("%.2f", data[position].order.cost).plus(" ₽")
             }
 
         }

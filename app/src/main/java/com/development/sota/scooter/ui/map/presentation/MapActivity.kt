@@ -2,10 +2,12 @@ package com.development.sota.scooter.ui.map.presentation
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.*
+import android.os.Build
 import android.os.Bundle
 import android.text.Spannable
 import android.text.SpannableString
@@ -18,6 +20,7 @@ import androidx.annotation.DrawableRes
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.DrawableCompat
 import androidx.core.view.GravityCompat
 import com.development.sota.scooter.R
 import com.development.sota.scooter.databinding.ActivityMapBinding
@@ -123,8 +126,6 @@ class MapActivity : MvpAppCompatActivity(), MapView {
 
         setContentView(binding.root)
 
-
-
         binding.contentOfMap.imageButtonMapQr.setOnClickListener {
             if (ActivityCompat.checkSelfPermission(
                     this,
@@ -194,7 +195,10 @@ class MapActivity : MvpAppCompatActivity(), MapView {
                     SCOOTERS_ICON_FIRST,
                     bitmapIconFromVector(R.drawable.ic_icon_scooter_first)
                 )
-                style.addImage(
+                style.addImageAsync(
+                    SCOOTERS_ICON_CHOSEN, getBitmapFromVectorDrawable(R.drawable.ic_chosen_scooter_icon)!!
+                )
+                style.addImageAsync(
                     MY_MARKER_IMAGE, BitmapFactory.decodeResource(
                         resources,
                         R.drawable.mapbox_marker_icon_default
@@ -499,9 +503,12 @@ class MapActivity : MvpAppCompatActivity(), MapView {
                         binding.contentOfMap.mapScooterItem.textViewItemScooterStateValue.visibility =
                             View.GONE
 
-                        binding.contentOfMap.mapScooterItem.cardViewScooterItem.constraintLayoutScooterItemPopupRouteBackgroundless.visibility = View.VISIBLE
-                        binding.contentOfMap.mapScooterItem.cardViewScooterItem.constraintLayoutScooterItemPopupRouteBackgroundless.clipToOutline = true
-                        binding.contentOfMap.mapScooterItem.cardViewScooterItem.constraintLayoutScooterItemPopupRouteBackgroundless.imageView2Backgroundless.clipToOutline = true
+                        binding.contentOfMap.mapScooterItem.cardViewScooterItem.constraintLayoutScooterItemPopupRouteBackgroundless.visibility =
+                            View.VISIBLE
+                        binding.contentOfMap.mapScooterItem.cardViewScooterItem.constraintLayoutScooterItemPopupRouteBackgroundless.clipToOutline =
+                            true
+                        binding.contentOfMap.mapScooterItem.cardViewScooterItem.constraintLayoutScooterItemPopupRouteBackgroundless.imageView2Backgroundless.clipToOutline =
+                            true
 
                         binding.contentOfMap.mapScooterItem.cardViewScooterItem.textViewItemScooterMinutePricing.text =
                             ""
@@ -664,7 +671,8 @@ class MapActivity : MvpAppCompatActivity(), MapView {
 
                                     if (orderTime != null) {
                                         val time =
-                                            LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli() - orderTime
+                                            LocalDateTime.now().atZone(ZoneId.systemDefault())
+                                                .toInstant().toEpochMilli() - orderTime
                                         val rawMinutes = TimeUnit.MILLISECONDS.toMinutes(time)
 
                                         val hours = rawMinutes / 60
@@ -681,7 +689,7 @@ class MapActivity : MvpAppCompatActivity(), MapView {
                                                 )
                                         }
                                     }
-                                        delay(1000)
+                                    delay(1000)
 
                                 }
                                 //Server check
@@ -695,44 +703,7 @@ class MapActivity : MvpAppCompatActivity(), MapView {
                                 .sum().toString() + " ₽"
                     }
 
-                    if (rentCount == 1) {
-                        binding.contentOfMap.mapPopupItem.textViewPopupMenuUpBordered.text =
-                            "${getString(R.string.map_rent)} 1"
-
-                        val rentOrder = orders.first { it.status == OrderStatus.ACTIVATED.value }
-
-                        disposableJobsBag.add(
-                            GlobalScope.launch {
-                                val orderTime = rentOrder.parseStartTime()
-
-                                while (true) {
-
-                                    if (orderTime != null) {
-                                        val time =
-                                            LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli() - orderTime
-                                        val rawMinutes = TimeUnit.MILLISECONDS.toMinutes(time)
-
-                                        val hours = rawMinutes / 60
-                                        val minutes = rawMinutes % 60
-                                        val seconds = time / 1000 - minutes * 60 - hours * 3600
-
-                                        runOnUiThread {
-                                            binding.contentOfMap.mapPopupItem.textViewPopupMenuUpValue.text =
-                                                String.format(
-                                                    "%d:%02d:%02d",
-                                                    hours,
-                                                    minutes,
-                                                    seconds
-                                                )
-                                        }
-                                    }
-                                        delay(1000)
-
-                                }
-                                //Server check
-                            }
-                        )
-                    } else if (rentCount > 1) {
+                    if (rentCount >= 1) {
                         binding.contentOfMap.mapPopupItem.textViewPopupMenuUpBordered.text =
                             "${getString(R.string.map_rent)} $rentCount"
                         binding.contentOfMap.mapPopupItem.textViewPopupMenuUpValue.text =
@@ -763,7 +734,8 @@ class MapActivity : MvpAppCompatActivity(), MapView {
 
                                     if (orderTime != null) {
                                         val time =
-                                            LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli() - orderTime
+                                            LocalDateTime.now().atZone(ZoneId.systemDefault())
+                                                .toInstant().toEpochMilli() - orderTime
                                         val rawMinutes = TimeUnit.MILLISECONDS.toMinutes(time)
 
                                         val hours = rawMinutes / 60
@@ -780,7 +752,7 @@ class MapActivity : MvpAppCompatActivity(), MapView {
                                                 )
                                         }
                                     }
-                                        delay(1000)
+                                    delay(1000)
 
                                 }
                                 //Server check
@@ -794,44 +766,7 @@ class MapActivity : MvpAppCompatActivity(), MapView {
                                 .sum().toString() + " ₽"
                     }
 
-                    if (rentCount == 1) {
-                        binding.contentOfMap.mapPopupItem.textViewPopupMenuDownBordered.text =
-                            "${getString(R.string.map_rent)} 1"
-
-                        val rentOrder = orders.first { it.status == OrderStatus.ACTIVATED.value }
-
-                        disposableJobsBag.add(
-                            GlobalScope.launch {
-                                val orderTime = rentOrder.parseStartTime()
-
-                                while (true) {
-
-                                    if(orderTime != null) {
-                                        val time =
-                                            LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli() - orderTime
-                                        val rawMinutes = TimeUnit.MILLISECONDS.toMinutes(time)
-
-                                        val hours = rawMinutes / 60
-                                        val minutes = rawMinutes % 60
-                                        val seconds = time / 1000 - minutes * 60 - hours * 3600
-
-                                        runOnUiThread {
-                                            binding.contentOfMap.mapPopupItem.textViewPopupMenuDownValue.text =
-                                                String.format(
-                                                    "%d:%02d:%02d",
-                                                    hours,
-                                                    minutes,
-                                                    seconds
-                                                )
-                                        }
-                                    }
-
-                                    delay(1000)
-                                }
-                                //Server check
-                            }
-                        )
-                    } else if (rentCount > 1) {
+                    if (rentCount >= 1) {
                         binding.contentOfMap.mapPopupItem.textViewPopupMenuDownBordered.text =
                             "${getString(R.string.map_rent)} $rentCount"
                         binding.contentOfMap.mapPopupItem.textViewPopupMenuDownValue.text =
@@ -941,6 +876,21 @@ class MapActivity : MvpAppCompatActivity(), MapView {
         return Bitmap.createBitmap(bitmap)
     }
 
+    private fun getBitmapFromVectorDrawable(drawableId: Int): Bitmap? {
+        var drawable = ContextCompat.getDrawable(this, drawableId)
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+            drawable = DrawableCompat.wrap(drawable!!).mutate()
+        }
+        val bitmap = Bitmap.createBitmap(
+            drawable!!.intrinsicWidth,
+            drawable.intrinsicHeight, Bitmap.Config.ARGB_8888
+        )
+        val canvas = Canvas(bitmap)
+        drawable.setBounds(0, 0, canvas.width, canvas.height)
+        drawable.draw(canvas)
+        return bitmap
+    }
+
     override fun onBackPressed() {}
 
     companion object {
@@ -959,6 +909,7 @@ class MapActivity : MvpAppCompatActivity(), MapView {
         const val SCOOTERS_ICON_THIRD = "scooter-third"
         const val SCOOTERS_ICON_SECOND = "scooter-second"
         const val SCOOTERS_ICON_FIRST = "scooter-first"
+        const val SCOOTERS_ICON_CHOSEN = "scooter-chosen"
         const val COUNT_LAYER = "count"
         const val ROUTE_LAYER = "route"
         const val ROUTE_SOURCE = "route-source"

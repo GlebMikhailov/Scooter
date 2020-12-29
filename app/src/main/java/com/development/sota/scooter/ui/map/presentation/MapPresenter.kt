@@ -35,6 +35,7 @@ class MapPresenter(val context: Context) : MvpPresenter<MapView>(), BasePresente
             if (currentScooter != null) {
                 interactor.getRouteFor(destination = value, origin = currentScooter!!.getLatLng())
             }
+            field = value
         }
 
     var rates = arrayListOf<Rate>() //Minute, Hour
@@ -43,6 +44,12 @@ class MapPresenter(val context: Context) : MvpPresenter<MapView>(), BasePresente
     var usingScooters = hashSetOf<Long>()
 
     var currentScooter: Scooter? = null
+    set(value) {
+        if(value != currentScooter) {
+            makeFeaturesFromScootersAndSendToMap()
+        }
+        field = value
+    }
 
     override fun onFirstViewAttach() {
         super.onFirstViewAttach()
@@ -234,12 +241,16 @@ class MapPresenter(val context: Context) : MvpPresenter<MapView>(), BasePresente
                                 "properties": {
                                     "id": ${it.id},
                                     "scooter-image": ${
-                            when (it.getScooterIcon()) {
-                                R.drawable.ic_icon_scooter_third -> "scooter-third"
-                                R.drawable.ic_icon_scooter_second -> "scooter-second"
-                                R.drawable.ic_icon_scooter_first -> "scooter-first"
-                                else -> "scooter-third"
-                            }
+                                        if(currentScooter != null && currentScooter!!.id == it.id) {
+                                           "scooter-chosen" 
+                                        } else {
+                                            when (it.getScooterIcon()) {
+                                                R.drawable.ic_icon_scooter_third -> "scooter-third"
+                                                R.drawable.ic_icon_scooter_second -> "scooter-second"
+                                                R.drawable.ic_icon_scooter_first -> "scooter-first"
+                                                else -> "scooter-third"
+                                            }
+                                        }
                         }
                                 }
                             }"""
