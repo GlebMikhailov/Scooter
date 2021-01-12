@@ -216,15 +216,15 @@ class MapPresenter(val context: Context) : MvpPresenter<MapView>(), BasePresente
 
     fun geoZoneGot(geoZoneJson: String) {
         val type = object : TypeToken<List<JsonObject>>() {}.type
-        val jsonArray = Gson().fromJson<List<JsonObject>>(geoZoneJson, type)
+        val jsonArray = Gson().fromJson<List<JsonObject>>(geoZoneJson.replace(" ", "").replace("[[", "[[[").replace("]]", "]]]"), type)
         val features = arrayListOf<Feature>()
 
         for (i in jsonArray) {
+            Log.w("GEOSTRING", i.toString())
             features.add(Feature.fromJson(i.toString()))
         }
 
-
-        viewState.drawGeoZones(FeatureCollection.fromFeatures(features))
+        viewState.drawGeoZones(features)
     }
 
     private fun makeFeaturesFromScootersAndSendToMap() {

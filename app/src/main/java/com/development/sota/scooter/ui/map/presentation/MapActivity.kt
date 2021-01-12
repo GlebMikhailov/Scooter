@@ -98,7 +98,7 @@ interface MapView : MvpView {
     fun sendToDrivingsList()
 
     @AddToEnd
-    fun drawGeoZones(geoJson: FeatureCollection)
+    fun drawGeoZones(feauters: ArrayList<Feature>)
 }
 
 
@@ -779,27 +779,63 @@ class MapActivity : MvpAppCompatActivity(), MapView {
         }
     }
 
-    override fun drawGeoZones(geoJson: FeatureCollection) {
+    override fun drawGeoZones(feauters: ArrayList<Feature>) {
         runOnUiThread {
             map?.style?.removeLayer(GEOZONE_LAYER)
-            map?.style?.removeSource(GEOZONE_SOURCE)
+            map?.style?.removeLayer(PARKING_LAYER)
+            map?.style?.removeLayer(PARKING_BONUS_LAYER)
 
-            geoJsonSource = GeoJsonSource(
+            map?.style?.removeSource(GEOZONE_SOURCE)
+            map?.style?.removeSource(PARKING_SOURCE)
+            map?.style?.removeSource(PARKING_BONUS_SOURCE)
+
+            val geozoneJsonSource = GeoJsonSource(
                 GEOZONE_SOURCE,
-                geoJson,
+                FeatureCollection.fromFeatures(
+                    feauters.filter { it.getStringProperty("geoType") == GEOZONE_LABEL }
+                ),
                 GeoJsonOptions()
             )
 
-            map?.style?.addSource(
-                geoJsonSource
+            val parkingJsonSource = GeoJsonSource(
+                PARKING_SOURCE,
+                FeatureCollection.fromFeatures(
+                    feauters.filter { it.getStringProperty("geoType") == PARKING_LABEL }
+                ),
+                GeoJsonOptions()
             )
+
+            val parkingBonusJsonSource = GeoJsonSource(
+                PARKING_BONUS_SOURCE,
+                FeatureCollection.fromFeatures(
+                    feauters.filter { it.getStringProperty("geoType") == PARKING_BONUS_LABEL }
+                ),
+                GeoJsonOptions()
+            )
+
+            map?.style?.addSource(geozoneJsonSource)
+            map?.style?.addSource(parkingJsonSource)
+            map?.style?.addSource(parkingBonusJsonSource)
 
             val geoZoneLayer = FillLayer(GEOZONE_LAYER, GEOZONE_SOURCE)
             geoZoneLayer.setProperties(
                 fillColor(GEOZONE_COLOR)
             )
 
+            val parkingZoneLayer = FillLayer(PARKING_LAYER, PARKING_SOURCE)
+            parkingZoneLayer.setProperties(
+                fillColor(PARKING_LINE_COLOR)
+            )
+
+            val parkingBonusZoneLayer = FillLayer(PARKING_BONUS_LAYER, PARKING_BONUS_SOURCE)
+            parkingZoneLayer.setProperties(
+                fillColor(PARKING_BONUS_COLOR)
+            )
+
+
             map?.style?.addLayer(geoZoneLayer)
+            map?.style?.addLayer(parkingZoneLayer)
+            map?.style?.addLayer(parkingBonusZoneLayer)
         }
     }
 
@@ -915,11 +951,19 @@ class MapActivity : MvpAppCompatActivity(), MapView {
         const val ROUTE_SOURCE = "route-source"
         const val GEOZONE_LAYER = "geozone"
         const val GEOZONE_SOURCE = "geozone-source"
+        const val PARKING_LAYER = "parking"
+        const val PARKING_SOURCE = "parking-source"
+        const val PARKING_BONUS_LAYER = "parking-bonus"
+        const val PARKING_BONUS_SOURCE = "parking-bonus-source"
 
         val GEOZONE_COLOR = Color.parseColor("#40FF453A")
         val GEOZONE_LINE_COLOR = Color.parseColor("#FF453A")
-        val PARKING_LINE_COLOR = Color.parseColor("#2F80ED")
-        val PARKING_BONUS_COLOR = Color.parseColor("#14D53D")
+        val PARKING_LINE_COLOR = Color.parseColor("#402F80ED")
+        val PARKING_BONUS_COLOR = Color.parseColor("#4014D53D")
+
+        val GEOZONE_LABEL = "Allowed"
+        val PARKING_LABEL = "Parking"
+        val PARKING_BONUS_LABEL = "BParking"
 
         val TRANSPARENT_COLOR = Color.TRANSPARENT
 
