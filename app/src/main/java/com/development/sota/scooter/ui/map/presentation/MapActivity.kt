@@ -2,7 +2,6 @@ package com.development.sota.scooter.ui.map.presentation
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -196,7 +195,8 @@ class MapActivity : MvpAppCompatActivity(), MapView {
                     bitmapIconFromVector(R.drawable.ic_icon_scooter_first)
                 )
                 style.addImageAsync(
-                    SCOOTERS_ICON_CHOSEN, getBitmapFromVectorDrawable(R.drawable.ic_chosen_scooter_icon)!!
+                    SCOOTERS_ICON_CHOSEN,
+                    getBitmapFromVectorDrawable(R.drawable.ic_chosen_scooter_icon)!!
                 )
                 style.addImageAsync(
                     MY_MARKER_IMAGE, BitmapFactory.decodeResource(
@@ -207,6 +207,32 @@ class MapActivity : MvpAppCompatActivity(), MapView {
 
                 localizationPlugin = LocalizationPlugin(binding.contentOfMap.mapView, map, style)
                 localizationPlugin.matchMapLanguageWithDeviceDefault()
+
+                val polygon = Polygon.fromLngLats(
+                    arrayListOf(
+                        arrayListOf(
+                            Point.fromLngLat(-180.0, -89.999999999999),
+                            Point.fromLngLat(-180.0, 89.99999999999),
+                            Point.fromLngLat(179.99999999, 89.99999999999),
+                            Point.fromLngLat(179.99999999, -89.99999999999),
+                            Point.fromLngLat(0.0, -89.99999999999),
+                            Point.fromLngLat(0.0, 89.99999999999)
+                        )) as List<MutableList<Point>>
+                )
+
+                style.addSource(GeoJsonSource(
+                    GEOZONE_BACKGROUND_SOURCE,
+                    Feature.fromGeometry(polygon),
+                    GeoJsonOptions()
+                ))
+
+                val layer = FillLayer(
+                    GEOZONE_BACKGROUND_LAYER, GEOZONE_BACKGROUND_SOURCE
+                ).withProperties(
+                    fillColor(GEOZONE_COLOR)
+                )
+
+                style.addLayer(layer)
             }
 
             markerManager = MarkerViewManager(binding.contentOfMap.mapView, map)
@@ -819,7 +845,7 @@ class MapActivity : MvpAppCompatActivity(), MapView {
 
             val geoZoneLayer = FillLayer(GEOZONE_LAYER, GEOZONE_SOURCE)
             geoZoneLayer.setProperties(
-                fillColor(GEOZONE_COLOR)
+                fillColor(TRANSPARENT_COLOR)
             )
 
             val parkingZoneLayer = FillLayer(PARKING_LAYER, PARKING_SOURCE)
@@ -833,9 +859,9 @@ class MapActivity : MvpAppCompatActivity(), MapView {
             )
 
 
-            map?.style?.addLayer(geoZoneLayer)
-            map?.style?.addLayer(parkingZoneLayer)
-            map?.style?.addLayer(parkingBonusZoneLayer)
+            map?.style?.addLayerAbove(geoZoneLayer, GEOZONE_BACKGROUND_LAYER)
+            map?.style?.addLayerAbove(parkingZoneLayer, GEOZONE_BACKGROUND_LAYER)
+            map?.style?.addLayerAbove(parkingBonusZoneLayer, GEOZONE_BACKGROUND_LAYER)
         }
     }
 
@@ -949,6 +975,8 @@ class MapActivity : MvpAppCompatActivity(), MapView {
         const val COUNT_LAYER = "count"
         const val ROUTE_LAYER = "route"
         const val ROUTE_SOURCE = "route-source"
+        const val GEOZONE_BACKGROUND_LAYER = "geozone-background"
+        const val GEOZONE_BACKGROUND_SOURCE = "geozone-background-source"
         const val GEOZONE_LAYER = "geozone"
         const val GEOZONE_SOURCE = "geozone-source"
         const val PARKING_LAYER = "parking"
@@ -965,7 +993,7 @@ class MapActivity : MvpAppCompatActivity(), MapView {
         val PARKING_LABEL = "Parking"
         val PARKING_BONUS_LABEL = "BParking"
 
-        val TRANSPARENT_COLOR = Color.TRANSPARENT
+        val TRANSPARENT_COLOR = Color.parseColor("#40FFFFFF")
 
         val MAX_BOOK_TIME = 900000L
     }
