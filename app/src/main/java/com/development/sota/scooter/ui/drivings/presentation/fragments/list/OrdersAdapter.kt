@@ -1,6 +1,10 @@
 package com.development.sota.scooter.ui.drivings.presentation.fragments.list
 
 import android.content.Context
+import android.graphics.Color
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.style.ForegroundColorSpan
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -45,9 +49,28 @@ class OrdersAdapter(
         holder.cardView.linnearLayoutScooterItemRentButtons.visibility = View.GONE
         holder.cardView.linnearLayoutScooterItemFirstBookButtons.visibility = View.GONE
 
+        val scooterPercentage = data[position].scooter.getBatteryPercentage()
+        val scooterInfo = data[position].scooter.getScooterRideInfo()
+
+        val spannable: Spannable = SpannableString("$scooterPercentage $scooterInfo")
+
+        spannable.setSpan(
+            ForegroundColorSpan(Color.BLACK),
+            0,
+            scooterPercentage.length,
+            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+        )
+
+        spannable.setSpan(
+            ForegroundColorSpan(Color.GRAY),
+            scooterInfo.length,
+            "$scooterPercentage $scooterInfo".length,
+            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+        )
+
         holder.cardView.textViewItemScooterId.text = "#${data[position].order.scooter}"
-        holder.cardView.textViewItemScooterBatteryPercent.text =
-            data[position].scooter.getBatteryPercentage()
+        holder.cardView.textViewItemScooterBatteryPercent.text = spannable
+
 
         when (data[position].status) {
             OrderStatus.BOOKED -> {

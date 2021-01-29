@@ -547,10 +547,30 @@ class MapActivity : MvpAppCompatActivity(), MapView {
                         binding.contentOfMap.mapScooterItem.cardViewScooterItem.textViewtextViewItemScooterHourPricing.text =
                             ""
 
+
+                        val scooterPercentage = scooter.getBatteryPercentage()
+                        val scooterInfo = scooter.getScooterRideInfo()
+
+                        val spannable: Spannable = SpannableString("$scooterPercentage $scooterInfo")
+
+                        spannable.setSpan(
+                            ForegroundColorSpan(Color.BLACK),
+                            0,
+                            scooterPercentage.length,
+                            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                        )
+
+                        spannable.setSpan(
+                            ForegroundColorSpan(Color.GRAY),
+                            scooterInfo.length,
+                            "$scooterPercentage $scooterInfo".length,
+                            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                        )
+
                         binding.contentOfMap.mapScooterItem.cardViewScooterItem.textViewItemScooterId.text =
                             "#${scooter.id}"
                         binding.contentOfMap.mapScooterItem.cardViewScooterItem.textViewItemScooterBatteryPercent.text =
-                            scooter.getBatteryPercentage()
+                            spannable
 
                         currentShowingScooter = scooter.id
 
