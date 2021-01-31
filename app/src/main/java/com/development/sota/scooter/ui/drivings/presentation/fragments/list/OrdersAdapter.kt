@@ -63,7 +63,7 @@ class OrdersAdapter(
 
         spannable.setSpan(
             ForegroundColorSpan(Color.GRAY),
-            scooterInfo.length,
+            scooterPercentage.length,
             "$scooterPercentage $scooterInfo".length,
             Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
         )
