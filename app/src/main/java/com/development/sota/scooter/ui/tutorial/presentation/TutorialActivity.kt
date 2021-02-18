@@ -1,8 +1,13 @@
 package com.development.sota.scooter.ui.tutorial.presentation
 
+import android.content.BroadcastReceiver
 import android.content.Intent
+import android.content.IntentFilter
+import android.net.ConnectivityManager
+import android.os.Build
 import android.os.Bundle
 import com.development.sota.scooter.MainActivity
+import com.development.sota.scooter.WifiReceiver
 import com.development.sota.scooter.databinding.ActivityTutorialBinding
 import moxy.MvpAppCompatActivity
 import moxy.MvpView
@@ -20,7 +25,7 @@ interface TutorialView : MvpView {
 
 class TutorialActivity : MvpAppCompatActivity(), TutorialView {
     private val presenter by moxyPresenter { TutorialPresenter(this) }
-
+    private var mNetworkReceiver: BroadcastReceiver? = null
     private var _binding: ActivityTutorialBinding? = null
     private val binding get() = _binding!!
 
@@ -38,6 +43,39 @@ class TutorialActivity : MvpAppCompatActivity(), TutorialView {
         binding.buttonTutorialSkip.setOnClickListener { presenter.onSkipButtonClicked() }
 
         binding.springDotsIndicatorTutorial.setViewPager2(binding.viewPager2Tutorial)
+        mNetworkReceiver = WifiReceiver()
+        registerNetworkBroadcastForNougat()
+
+
+    }
+
+
+    private fun registerNetworkBroadcastForNougat() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            registerReceiver(
+                mNetworkReceiver,
+                IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
+            )
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            registerReceiver(
+                mNetworkReceiver,
+                IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
+            )
+        }
+    }
+
+    protected fun unregisterNetworkChanges() {
+        try {
+            unregisterReceiver(mNetworkReceiver)
+        } catch (e: IllegalArgumentException) {
+            e.printStackTrace()
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        unregisterNetworkChanges()
     }
 
     override fun nextPage(index: Int) {

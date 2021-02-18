@@ -10,5 +10,7 @@ data class Client(
     val balance: String,
     @SerializedName("client_photo") val clientPhoto: String?,
     val phone: String,
-    @SerializedName("failed_books") val failedBooks: Long
+    @SerializedName("failed_books") val failedBooks: Long,
+  
+
 )

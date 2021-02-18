@@ -1,8 +1,13 @@
 package com.development.sota.scooter.ui.drivings
 
+import android.content.BroadcastReceiver
+import android.content.IntentFilter
+import android.net.ConnectivityManager
+import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
 import com.development.sota.scooter.R
+import com.development.sota.scooter.WifiReceiver
 import com.development.sota.scooter.databinding.ActivityDrivingsBinding
 import com.development.sota.scooter.ui.drivings.presentation.fragments.QRFragment
 import com.development.sota.scooter.ui.drivings.presentation.fragments.code.DrivingsCodeFragment
@@ -57,7 +62,36 @@ class DrivingsActivity : MvpAppCompatActivity(), DrivingsView, DrivingsActivityV
         }
 
         setContentView(binding.root)
+        mNetworkReceiver = WifiReceiver()
+        registerNetworkBroadcastForNougat()
+
+
     }
+    private var mNetworkReceiver: BroadcastReceiver? = null
+    private fun registerNetworkBroadcastForNougat() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            registerReceiver(
+                mNetworkReceiver,
+                IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
+            )
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            registerReceiver(
+                mNetworkReceiver,
+                IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
+            )
+        }
+    }
+
+    protected fun unregisterNetworkChanges() {
+        try {
+            unregisterReceiver(mNetworkReceiver)
+        } catch (e: IllegalArgumentException) {
+            e.printStackTrace()
+        }
+    }
+
+
 
     override fun gotCode(code: Long, delegate: DrivingsFragmentView) {
         presenter.testCode(code, delegate)
@@ -154,7 +188,9 @@ class DrivingsActivity : MvpAppCompatActivity(), DrivingsView, DrivingsActivityV
 
     override fun onDestroy() {
         presenter.onDestroy()
+
         super.onDestroy()
+        unregisterNetworkChanges()
     }
 }
 

@@ -17,7 +17,6 @@ import moxy.MvpAppCompatFragment
 import moxy.MvpView
 import moxy.ktx.moxyPresenter
 import moxy.viewstate.strategy.alias.AddToEnd
-import okhttp3.internal.notifyAll
 
 interface DrivingsListView : MvpView {
     @AddToEnd

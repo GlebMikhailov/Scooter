@@ -1,11 +1,16 @@
 package com.development.sota.scooter.ui.login.presentation
 
+import android.content.BroadcastReceiver
 import android.content.Intent
+import android.content.IntentFilter
+import android.net.ConnectivityManager
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import com.development.sota.scooter.MainActivity
 import com.development.sota.scooter.R
+import com.development.sota.scooter.WifiReceiver
 import com.development.sota.scooter.databinding.ActivityLoginBinding
 import com.development.sota.scooter.ui.login.presentation.fragments.code.LoginCodeFragment
 import com.development.sota.scooter.ui.login.presentation.fragments.input.LoginInputFragment
@@ -64,14 +69,43 @@ class LoginActivity : MvpAppCompatActivity(),
     private var saveInputFragment: MvpAppCompatFragment? = null
     private var saveCodeFragment: MvpAppCompatFragment? = null
     private var saveUserAgreementFragment: MvpAppCompatFragment? = null
-
+    private var mNetworkReceiver: BroadcastReceiver? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         _binding = ActivityLoginBinding.inflate(layoutInflater)
 
         setContentView(binding.root)
+        mNetworkReceiver = WifiReceiver()
+        registerNetworkBroadcastForNougat()
+
+
     }
+
+    private fun registerNetworkBroadcastForNougat() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            registerReceiver(
+                mNetworkReceiver,
+                IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
+            )
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            registerReceiver(
+                mNetworkReceiver,
+                IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
+            )
+        }
+    }
+
+    protected fun unregisterNetworkChanges() {
+        try {
+            unregisterReceiver(mNetworkReceiver)
+        } catch (e: IllegalArgumentException) {
+            e.printStackTrace()
+        }
+    }
+
+
 
     override fun setFragmentInput() {
         runOnUiThread {
@@ -182,7 +216,7 @@ class LoginActivity : MvpAppCompatActivity(),
 
     override fun onDestroy() {
         presenter.onDestroyCalled()
-
+        unregisterNetworkChanges()
         super.onDestroy()
     }
 }

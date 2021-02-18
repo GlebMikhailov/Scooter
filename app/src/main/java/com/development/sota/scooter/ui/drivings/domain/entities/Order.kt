@@ -1,13 +1,11 @@
 package com.development.sota.scooter.ui.drivings.domain.entities
 
 import android.annotation.SuppressLint
-import android.util.Log
 import com.development.sota.scooter.ui.map.data.Scooter
+import com.development.sota.scooter.ui.drivings.domain.entities.Order
 import com.google.gson.annotations.SerializedName
 import java.text.SimpleDateFormat
 import java.time.Instant
-import java.time.ZoneId
-import java.time.ZoneOffset
 import java.util.*
 
 data class Order(
@@ -49,7 +47,7 @@ data class Order(
 
 }
 
-data class OrderWithStatus(val order: Order, val scooter: Scooter, var status: OrderStatus)
+data class OrderWithStatus(val order: Order, val scooter: Scooter, var status: com.development.sota.scooter.ui.drivings.domain.entities.OrderStatus)
 
 data class AddOrderResponse(val id: Long)
 

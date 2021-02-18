@@ -34,6 +34,7 @@ interface MapInteractor : BaseInteractor {
     fun getScootersAndOrders()
     fun getGeoZone()
     fun getCodeOfScooterAndNull(): Long?
+    fun getBalance(): Double
 }
 
 class MapInteractorImpl(private val presenter: MapPresenter) : MapInteractor {
@@ -188,6 +189,10 @@ class MapInteractorImpl(private val presenter: MapPresenter) : MapInteractor {
         } else {
             return null
         }
+    }
+
+    override fun getBalance(): Double {
+        return 0.0
     }
 
     override fun disposeRequests() {

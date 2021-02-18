@@ -2,10 +2,10 @@ package com.development.sota.scooter.ui.map.presentation
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.content.DialogInterface
-import android.content.Intent
+import android.content.*
 import android.content.pm.PackageManager
 import android.graphics.*
+import android.net.ConnectivityManager
 import android.os.Build
 import android.os.Bundle
 import android.text.Spannable
@@ -14,6 +14,7 @@ import android.text.style.ForegroundColorSpan
 import android.util.Log
 import android.view.View
 import android.widget.Button
+import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.DrawableRes
 import androidx.appcompat.app.AlertDialog
@@ -21,14 +22,26 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.DrawableCompat
 import androidx.core.view.GravityCompat
+import com.android.volley.Request
+import com.android.volley.toolbox.JsonArrayRequest
+import com.android.volley.toolbox.Volley
+import com.development.sota.scooter.BASE_URL
 import com.development.sota.scooter.R
+import com.development.sota.scooter.WifiReceiver
+import com.development.sota.scooter.api.ClientService
+import com.development.sota.scooter.api.client.RetrofitClient
+import com.development.sota.scooter.api.client.UserClass
+import com.development.sota.scooter.api.client.WebResponse
 import com.development.sota.scooter.databinding.ActivityMapBinding
 import com.development.sota.scooter.ui.drivings.DrivingsActivity
 import com.development.sota.scooter.ui.drivings.DrivingsStartTarget
 import com.development.sota.scooter.ui.drivings.domain.entities.Order
 import com.development.sota.scooter.ui.drivings.domain.entities.OrderStatus
+import com.development.sota.scooter.ui.help.HelpActivity
 import com.development.sota.scooter.ui.map.data.Rate
 import com.development.sota.scooter.ui.map.data.Scooter
+import com.development.sota.scooter.ui.profile.ProfileActivity
+import com.development.sota.scooter.ui.promo.PromoActivity
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.mapbox.core.constants.Constants
@@ -47,7 +60,6 @@ import com.mapbox.mapboxsdk.style.layers.*
 import com.mapbox.mapboxsdk.style.layers.PropertyFactory.*
 import com.mapbox.mapboxsdk.style.sources.GeoJsonOptions
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
-import kotlinx.android.synthetic.main.item_popup_map.view.*
 import kotlinx.android.synthetic.main.item_scooter_driving.view.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
@@ -56,16 +68,21 @@ import kotlinx.coroutines.launch
 import moxy.MvpAppCompatActivity
 import moxy.MvpView
 import moxy.ktx.moxyPresenter
+import moxy.viewstate.strategy.AddToEndSingleStrategy
+import moxy.viewstate.strategy.StateStrategyType
 import moxy.viewstate.strategy.alias.AddToEnd
+import retrofit2.Response
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import timber.log.Timber
 import java.time.LocalDateTime
 import java.time.ZoneId
-import java.util.*
 import java.util.concurrent.TimeUnit
-import kotlin.collections.ArrayList
 
 
 interface MapView : MvpView {
+
+
     @AddToEnd
     fun updateScooterMarkers(scootersFeatures: List<Feature>)
 
@@ -97,7 +114,16 @@ interface MapView : MvpView {
     fun sendToDrivingsList()
 
     @AddToEnd
+    fun sendToPromoList()
+
+    @AddToEnd
+    fun sendToHelpActivity()
+
+    @AddToEnd
     fun drawGeoZones(feauters: ArrayList<Feature>)
+
+    @AddToEnd
+    fun sendToTheProfileActivity()
 }
 
 
@@ -124,6 +150,42 @@ class MapActivity : MvpAppCompatActivity(), MapView {
         _binding = ActivityMapBinding.inflate(layoutInflater)
 
         setContentView(binding.root)
+        val sharedPreferences = getSharedPreferences("account", Context.MODE_PRIVATE)
+        val headerView: View = binding.navView.getHeaderView(0)
+        val navUsername: TextView = headerView.findViewById<View>(R.id.text_name_header) as TextView
+        val navUserBalance: TextView = headerView.findViewById<View>(R.id.text_balance_header) as TextView
+        var balance = sharedPreferences.getString("balance", "")
+        var name = sharedPreferences.getString("name", "")
+
+        if (balance.isNullOrEmpty()) {
+              RetrofitClient().getContentData(RetrofitClient().service(this@MapActivity).getUser("json", sharedPreferences.getLong("id", -1).toString()), object : WebResponse {
+                override fun onResponseSuccess(result: Response<List<UserClass>>) {
+                    result.body()?.forEach { data ->
+                        navUsername.text = name
+
+                        navUserBalance.text = "${data.balance} ₽ "
+                        try {
+                            sharedPreferences.edit().putString("balance", data.balance.toString())
+                        } catch (e: Exception){
+                            Log.d("us_user_data_error", "error = $e")
+                        }
+
+
+
+
+                    }
+
+
+                }
+
+                override fun onResponseFailed(error: String?) {
+                }
+
+            })
+        } else {
+            navUsername.text = name
+            navUserBalance.text = "$balance ₽ "
+        }
 
         binding.contentOfMap.imageButtonMapQr.setOnClickListener {
             if (ActivityCompat.checkSelfPermission(
@@ -143,7 +205,9 @@ class MapActivity : MvpAppCompatActivity(), MapView {
         binding.contentOfMap.imageButtonMapMenu.setOnClickListener {
             binding.drawerLayout.openDrawer(GravityCompat.START)
         }
-
+        binding.contentOfMap.imageButtonMapPromo.setOnClickListener {
+            presenter.sendToThePromoList()
+        }
         binding.contentOfMap.imageButtonMapLocation.setOnClickListener {
             Timber.w("Geoposition")
             if (ActivityCompat.checkSelfPermission(
@@ -164,9 +228,17 @@ class MapActivity : MvpAppCompatActivity(), MapView {
         binding.contentOfMap.mapScooterItem.constraintLayoutItemScooterParent.clipToOutline = true
         binding.contentOfMap.mapScooterItem.constraintLayoutItemScooterParent.visibility = View.GONE
 
+
+
+
+
+
         binding.navView.setNavigationItemSelectedListener {
             when (it.itemId) {
                 R.id.menuMapItemDrivings -> presenter.sendToTheDrivingsList()
+                R.id.menuMapItemPromo -> presenter.sendToThePromoList()
+                R.id.menuMapItemHelp -> presenter.sendToHelpActivity()
+                R.id.menuMapItemProfile -> presenter.sendToTheProfileActivity()
             }
 
             return@setNavigationItemSelectedListener true
@@ -217,14 +289,17 @@ class MapActivity : MvpAppCompatActivity(), MapView {
                             Point.fromLngLat(179.99999999, -89.99999999999),
                             Point.fromLngLat(0.0, -89.99999999999),
                             Point.fromLngLat(0.0, 89.99999999999)
-                        )) as List<MutableList<Point>>
+                        )
+                    ) as List<MutableList<Point>>
                 )
 
-                style.addSource(GeoJsonSource(
-                    GEOZONE_BACKGROUND_SOURCE,
-                    Feature.fromGeometry(polygon),
-                    GeoJsonOptions()
-                ))
+                style.addSource(
+                    GeoJsonSource(
+                        GEOZONE_BACKGROUND_SOURCE,
+                        Feature.fromGeometry(polygon),
+                        GeoJsonOptions()
+                    )
+                )
 
                 val layer = FillLayer(
                     GEOZONE_BACKGROUND_LAYER, GEOZONE_BACKGROUND_SOURCE
@@ -238,7 +313,7 @@ class MapActivity : MvpAppCompatActivity(), MapView {
             markerManager = MarkerViewManager(binding.contentOfMap.mapView, map)
 
             map.addOnMapClickListener {
-                binding.contentOfMap.mapScooterItem.cardViewScooterItem.visibility = View.GONE;
+                binding.contentOfMap.mapScooterItem.cardViewScooterItem.visibility = View.GONE
 
                 val pointf: PointF = map.projection.toScreenLocation(it)
                 val rectF = RectF(pointf.x - 10, pointf.y - 10, pointf.x + 10, pointf.y + 10)
@@ -283,6 +358,38 @@ class MapActivity : MvpAppCompatActivity(), MapView {
         getLocationPermission()
         initLocationRelationships()
 
+        mNetworkReceiver = WifiReceiver()
+        registerNetworkBroadcastForNougat()
+
+
+    }
+    private var mNetworkReceiver: BroadcastReceiver? = null
+    private fun registerNetworkBroadcastForNougat() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            registerReceiver(
+                mNetworkReceiver,
+                IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
+            )
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            registerReceiver(
+                mNetworkReceiver,
+                IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
+            )
+        }
+    }
+
+    protected fun unregisterNetworkChanges() {
+        try {
+            unregisterReceiver(mNetworkReceiver)
+        } catch (e: IllegalArgumentException) {
+            e.printStackTrace()
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        unregisterNetworkChanges()
     }
 
     private fun moveCameraToLeavesBounds(featureCollectionToInspect: FeatureCollection) {
@@ -551,7 +658,8 @@ class MapActivity : MvpAppCompatActivity(), MapView {
                         val scooterPercentage = scooter.getBatteryPercentage()
                         val scooterInfo = scooter.getScooterRideInfo()
 
-                        val spannable: Spannable = SpannableString("$scooterPercentage $scooterInfo")
+                        val spannable: Spannable =
+                            SpannableString("$scooterPercentage $scooterInfo")
 
                         spannable.setSpan(
                             ForegroundColorSpan(Color.BLACK),
@@ -896,6 +1004,27 @@ class MapActivity : MvpAppCompatActivity(), MapView {
         presenter.onStartEmitted()
     }
 
+    override fun sendToTheProfileActivity() {
+        runOnUiThread {
+            val intent = Intent(this, ProfileActivity::class.java)
+            startActivity(intent)
+        }
+    }
+
+    override fun sendToPromoList() {
+        runOnUiThread {
+            val intent = Intent(this, PromoActivity::class.java)
+            Log.d("active_activity_intent", "Promo")
+            startActivity(intent)
+        }
+    }
+
+    override fun sendToHelpActivity() {
+        runOnUiThread {
+            val intent = Intent(this, HelpActivity::class.java)
+            startActivity(intent)
+        }
+    }
 
     override fun sendToDrivingsList() {
         runOnUiThread {
@@ -977,6 +1106,61 @@ class MapActivity : MvpAppCompatActivity(), MapView {
         drawable.setBounds(0, 0, canvas.width, canvas.height)
         drawable.draw(canvas)
         return bitmap
+    }
+
+    /* fun onResponse(call: Call<JsonObject?>?, response: Response<JsonObject>) {
+         if (response.isSuccessful()) {
+             try {
+                 val jsonObject = JSONObject(Gson().toJson(response.body()))
+                 msg = jsonObject.getString("msg")
+                 status = jsonObject.getBoolean("status")
+                 msg = jsonObject.getString("msg")
+                 status = jsonObject.getBoolean("status")
+             } catch (e: JSONException) {
+                 e.printStackTrace()
+             }
+             Toast.makeText(this@MainActivity, msg, Toast.LENGTH_SHORT).show()
+             Log.e("cvbnop", response.body().toString())
+         } else {
+             Toast.makeText(this@MainActivity, "Some error occurred...", Toast.LENGTH_LONG).show()
+         }
+     }
+
+     */
+    fun fetchData() {
+
+        val requestQueue = Volley.newRequestQueue(this)
+        Log.d(
+            "user_response_url",
+            "url = ${BASE_URL}getClient/?format=json&id=${
+                getSharedPreferences(
+                    "account",
+                    Context.MODE_PRIVATE
+                ).getLong("id", 0)
+            }"
+        )
+        val request = JsonArrayRequest(
+            Request.Method.GET,
+            "${BASE_URL}getClient/?format=json&id=${
+                getSharedPreferences(
+                    "account",
+                    MODE_PRIVATE
+                ).getLong("id", 0)
+            }",
+            null,
+            { response ->
+
+                Log.d("user_response", "response = $response")
+
+
+            },
+            { error ->
+                error.printStackTrace()
+                Log.d("user_response", "err = ${error.message}")
+            })
+        requestQueue?.add(request)
+
+
     }
 
     override fun onBackPressed() {}

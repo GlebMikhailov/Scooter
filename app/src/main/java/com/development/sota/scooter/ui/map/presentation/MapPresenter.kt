@@ -15,7 +15,6 @@ import com.google.gson.JsonObject
 import com.google.gson.reflect.TypeToken
 import com.mapbox.api.directions.v5.models.DirectionsRoute
 import com.mapbox.geojson.Feature
-import com.mapbox.geojson.FeatureCollection
 import com.mapbox.mapboxsdk.geometry.LatLng
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -199,7 +198,15 @@ class MapPresenter(val context: Context) : MvpPresenter<MapView>(), BasePresente
     fun sendToTheDrivingsList() {
         viewState.sendToDrivingsList()
     }
-
+    fun sendToThePromoList() {
+        viewState.sendToPromoList()
+    }
+    fun sendToHelpActivity() {
+        viewState.sendToHelpActivity()
+    }
+    fun sendToTheProfileActivity() {
+        viewState.sendToTheProfileActivity()
+    }
     fun onStartEmitted() {
         interactor.getScootersAndOrders()
 

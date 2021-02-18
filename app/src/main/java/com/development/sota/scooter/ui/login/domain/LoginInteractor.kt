@@ -1,5 +1,6 @@
 package com.development.sota.scooter.ui.login.domain
 
+import android.util.Log
 import com.development.sota.scooter.api.LoginRetrofitProvider
 import com.development.sota.scooter.base.BaseInteractor
 import com.development.sota.scooter.db.SharedPreferencesProvider
@@ -53,7 +54,9 @@ class LoginCodeInteractorImpl(val presenter: LoginCodePresenter) : LoginInteract
                 .subscribeBy(
                     onError = { presenter.gotErrorFromAPI() },
                     onNext = { presenter.gotCodeFromAPI(it.code) })
+
         )
+        Log.d("error", "error = ${presenter.gotErrorFromAPI()}")
     }
 
     override fun saveCredentials(phone: String, name: String, id: Long) {}

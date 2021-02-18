@@ -9,6 +9,14 @@
         <item name="fontFamily">@font/roboto</item>
         <item name="android:textSize">14dp</item>
     </style>
+    <style name="MaterialTheme.MyApp" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="colorPrimary">@color/icon_purple</item>
+        <item name="colorPrimaryDark">@color/white</item>
+        <item name="colorAccent">@color/icon_purple</item>
+        <item name="font">@font/roboto</item>
+        <item name="fontFamily">@font/roboto</item>
+        <item name="android:textSize">14dp</item>
+    </style>
 
     <style name="FullscreenAppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <!-- Customize your theme here. -->
