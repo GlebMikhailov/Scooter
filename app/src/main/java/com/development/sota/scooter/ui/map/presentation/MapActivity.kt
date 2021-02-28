@@ -958,10 +958,12 @@ class MapActivity : MvpAppCompatActivity(), MapView {
             map?.style?.removeLayer(GEOZONE_LAYER)
             map?.style?.removeLayer(PARKING_LAYER)
             map?.style?.removeLayer(PARKING_BONUS_LAYER)
+            map?.style?.removeLayer(PARKING_SHTRAF_LAYER)
 
             map?.style?.removeSource(GEOZONE_SOURCE)
             map?.style?.removeSource(PARKING_SOURCE)
             map?.style?.removeSource(PARKING_BONUS_SOURCE)
+            map?.style?.removeSource(PARKING_SHTRAF_SOURCE)
 
             val geozoneJsonSource = GeoJsonSource(
                 GEOZONE_SOURCE,
@@ -987,9 +989,18 @@ class MapActivity : MvpAppCompatActivity(), MapView {
                 GeoJsonOptions()
             )
 
+            val parkingShtrafJsonSource = GeoJsonSource(
+                PARKING_SHTRAF_SOURCE,
+                FeatureCollection.fromFeatures(
+                    feauters.filter { it.getStringProperty("geoType") == PARKING_SHTRAF_LABEL }
+                ),
+                GeoJsonOptions()
+            )
+
             map?.style?.addSource(geozoneJsonSource)
             map?.style?.addSource(parkingJsonSource)
             map?.style?.addSource(parkingBonusJsonSource)
+            map?.style?.addSource(parkingShtrafJsonSource)
 
             val geoZoneLayer = FillLayer(GEOZONE_LAYER, GEOZONE_SOURCE)
             geoZoneLayer.setProperties(
@@ -1008,10 +1019,17 @@ class MapActivity : MvpAppCompatActivity(), MapView {
                 visibility(Property.NONE)
             )
 
+            val parkingShtrafZoneLayer = FillLayer(PARKING_SHTRAF_LAYER, PARKING_SHTRAF_SOURCE)
+            parkingZoneLayer.setProperties(
+                fillColor(PARKING_SHTRAF_COLOR),
+                visibility(Property.NONE)
+            )
+
 
             map?.style?.addLayerAbove(geoZoneLayer, GEOZONE_BACKGROUND_LAYER)
             map?.style?.addLayerAbove(parkingZoneLayer, GEOZONE_BACKGROUND_LAYER)
             map?.style?.addLayerAbove(parkingBonusZoneLayer, GEOZONE_BACKGROUND_LAYER)
+            map?.style?.addLayerAbove(parkingShtrafZoneLayer, GEOZONE_BACKGROUND_LAYER)
 
         }
     }
@@ -1204,6 +1222,7 @@ class MapActivity : MvpAppCompatActivity(), MapView {
         map?.getStyle {
             val pB = it.getLayer(PARKING_BONUS_LABEL)
             val p = it.getLayer(PARKING_LAYER)
+            val pP = it.getLayer(PARKING_SHTRAF_LAYER)
             val count = it.getLayer(COUNT_LAYER)
             val scooter = it.getLayer(SCOOTERS_LAYER)
             val clusters = it.getLayer(CLUSTERS_LAYER)
@@ -1211,12 +1230,14 @@ class MapActivity : MvpAppCompatActivity(), MapView {
             if (isParkingsVisible){
                 pB?.setProperties(visibility(Property.NONE))
                 p?.setProperties(visibility(Property.NONE))
+                pP?.setProperties(visibility(Property.NONE))
                 count?.setProperties(visibility(Property.VISIBLE))
                 scooter?.setProperties(visibility(Property.VISIBLE))
                 clusters?.setProperties(visibility(Property.VISIBLE))
             }else{
                 pB?.setProperties(visibility(Property.VISIBLE))
                 p?.setProperties(visibility(Property.VISIBLE))
+                pP?.setProperties(visibility(Property.VISIBLE))
                 count?.setProperties(visibility(Property.NONE))
                 scooter?.setProperties(visibility(Property.NONE))
                 clusters?.setProperties(visibility(Property.NONE))
@@ -1268,14 +1289,19 @@ class MapActivity : MvpAppCompatActivity(), MapView {
         const val PARKING_BONUS_LAYER = "parking-bonus"
         const val PARKING_BONUS_SOURCE = "parking-bonus-source"
 
+        const val PARKING_SHTRAF_LAYER = "parking-shtraf"
+        const val PARKING_SHTRAF_SOURCE = "parking-shtraf-source"
+
         val GEOZONE_COLOR = Color.parseColor("#40FF453A")
         val GEOZONE_LINE_COLOR = Color.parseColor("#FF453A")
         val PARKING_LINE_COLOR = Color.parseColor("#402F80ED")
         val PARKING_BONUS_COLOR = Color.parseColor("#4014D53D")
+        val PARKING_SHTRAF_COLOR = Color.parseColor("#402F80ED")
 
         val GEOZONE_LABEL = "Allowed"
         val PARKING_LABEL = "Parking"
         val PARKING_BONUS_LABEL = "BParking"
+        val PARKING_SHTRAF_LABEL = "PParking"
 
         val TRANSPARENT_COLOR = Color.parseColor("#40FFFFFF")
 
