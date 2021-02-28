@@ -136,6 +136,24 @@
         app:srcCompat="@drawable/ic_icon_gift"
         android:elevation="4dp" />
 
+    <ImageButton
+        android:id="@+id/toggleParkings"
+        android:onClick="toggleParkings"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:background="@drawable/ic_vertical_gradient"
+        android:cropToPadding="true"
+        android:padding="12dp"
+        android:scaleType="centerInside"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:srcCompat="@drawable/ic_p"
+        android:tint="@color/white"
+        android:elevation="4dp" />
+
     <include
         android:id="@+id/mapScooterItem"
         layout="@layout/item_scooter_driving"

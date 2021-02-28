@@ -12,6 +12,7 @@ import com.development.sota.scooter.databinding.ActivityDrivingsBinding
 import com.development.sota.scooter.ui.drivings.presentation.fragments.QRFragment
 import com.development.sota.scooter.ui.drivings.presentation.fragments.code.DrivingsCodeFragment
 import com.development.sota.scooter.ui.drivings.presentation.fragments.list.DrivingsListFragment
+import com.development.sota.scooter.ui.map.data.Scooter
 import moxy.MvpAppCompatActivity
 import moxy.MvpAppCompatFragment
 import moxy.MvpView
@@ -37,7 +38,7 @@ interface DrivingsActivityView {
 }
 
 interface DrivingsFragmentView {
-    fun gotResultOfCodeChecking(result: Boolean)
+    fun gotResultOfCodeChecking(result: Boolean, scooter: Scooter?)
 }
 
 class DrivingsActivity : MvpAppCompatActivity(), DrivingsView, DrivingsActivityView {

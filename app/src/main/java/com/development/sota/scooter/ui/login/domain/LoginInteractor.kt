@@ -4,6 +4,7 @@ import android.util.Log
 import com.development.sota.scooter.api.LoginRetrofitProvider
 import com.development.sota.scooter.base.BaseInteractor
 import com.development.sota.scooter.db.SharedPreferencesProvider
+import com.development.sota.scooter.ui.login.domain.entities.UserBody
 import com.development.sota.scooter.ui.login.presentation.LoginPresenter
 import com.development.sota.scooter.ui.login.presentation.fragments.code.LoginCodePresenter
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
@@ -24,7 +25,7 @@ class LoginInteractorImpl(val presenter: LoginPresenter) : LoginInteractor {
     override fun sendLoginRequest(phone: String, name: String) {
         compositeDisposable.add(
             LoginRetrofitProvider.service
-                .clientLogin(phone, name).subscribeOn(Schedulers.io())
+                .clientLogin(UserBody( phone, name)).subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeBy(
                     onError = { presenter.gotErrorFromAPI(it.localizedMessage ?: "") },
@@ -49,7 +50,7 @@ class LoginCodeInteractorImpl(val presenter: LoginCodePresenter) : LoginInteract
     override fun sendLoginRequest(phone: String, name: String) {
         compositeDisposable.add(
             LoginRetrofitProvider.service
-                .clientLogin(phone, name).subscribeOn(Schedulers.io())
+                .clientLogin(UserBody(phone, name)).subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeBy(
                     onError = { presenter.gotErrorFromAPI() },

@@ -21,6 +21,39 @@
         android:layout_gravity="start"
         android:fitsSystemWindows="true"
         app:headerLayout="@layout/nav_header_main"
-        app:menu="@menu/menu_map" />
+        app:menu="@menu/menu_map" >
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/version"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/fake_version"
+                android:fontFamily="@font/roboto"
+                android:textSize="14sp"
+                android:textColor="@color/gray"
+                />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/poweredBy"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/powered_by_sota"
+                android:fontFamily="@font/roboto"
+                android:textSize="14sp"
+                android:textColor="@android:color/black"
+                />
+
+        </LinearLayout>
+
+
+    </com.google.android.material.navigation.NavigationView>
 
 </androidx.drawerlayout.widget.DrawerLayout>

@@ -1,6 +1,7 @@
 package com.development.sota.scooter.ui.drivings
 
 import android.content.Context
+import android.util.Log
 import com.development.sota.scooter.ui.drivings.domain.DrivingsInteractor
 import com.development.sota.scooter.ui.drivings.domain.DrivingsInteractorImpl
 import com.development.sota.scooter.ui.map.data.Scooter
@@ -42,15 +43,14 @@ class DrivingsPresenter(val context: Context) : MvpPresenter<DrivingsView>() {
 
     fun gotScootersFromAPI(scooters: ArrayList<Scooter>) {
         this.scooters = scooters
-
         if (codeToTest != null) {
             val first = this.scooters.firstOrNull { it.id == codeToTest }
 
             if (first != null) {
-                fragmentDelegate?.gotResultOfCodeChecking(true)
+                fragmentDelegate?.gotResultOfCodeChecking(true, first)
                 //TODO: Send to Drivigns
             } else {
-                fragmentDelegate?.gotResultOfCodeChecking(false)
+                fragmentDelegate?.gotResultOfCodeChecking(false, null)
             }
 
             fragmentDelegate = null

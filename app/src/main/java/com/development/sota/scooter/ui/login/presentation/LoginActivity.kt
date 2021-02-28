@@ -149,6 +149,7 @@ class LoginActivity : MvpAppCompatActivity(),
 
     override fun showToastWarning() {
         Toast.makeText(this, getString(R.string.error_api), Toast.LENGTH_SHORT).show()
+        this.finish()
     }
 
     override fun requestCodeClicked(phone: String, name: String) {

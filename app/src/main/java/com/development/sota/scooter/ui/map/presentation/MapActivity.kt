@@ -2,6 +2,7 @@ package com.development.sota.scooter.ui.map.presentation
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.*
 import android.content.pm.PackageManager
 import android.graphics.*
@@ -44,7 +45,14 @@ import com.development.sota.scooter.ui.profile.ProfileActivity
 import com.development.sota.scooter.ui.promo.PromoActivity
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import com.mapbox.android.core.permissions.PermissionsListener
+import com.mapbox.android.core.permissions.PermissionsManager
+import com.mapbox.api.directions.v5.DirectionsCriteria
+import com.mapbox.api.directions.v5.MapboxDirections
+import com.mapbox.api.directions.v5.models.DirectionsResponse
+import com.mapbox.api.directions.v5.models.DirectionsRoute
 import com.mapbox.core.constants.Constants
+import com.mapbox.core.constants.Constants.PRECISION_6
 import com.mapbox.geojson.*
 import com.mapbox.geojson.Point
 import com.mapbox.mapboxsdk.Mapbox
@@ -71,6 +79,8 @@ import moxy.ktx.moxyPresenter
 import moxy.viewstate.strategy.AddToEndSingleStrategy
 import moxy.viewstate.strategy.StateStrategyType
 import moxy.viewstate.strategy.alias.AddToEnd
+import retrofit2.Call
+import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -157,6 +167,8 @@ class MapActivity : MvpAppCompatActivity(), MapView {
         var balance = sharedPreferences.getString("balance", "")
         var name = sharedPreferences.getString("name", "")
 
+        changePBSTextColor()
+
         if (balance.isNullOrEmpty()) {
               RetrofitClient().getContentData(RetrofitClient().service(this@MapActivity).getUser("json", sharedPreferences.getLong("id", -1).toString()), object : WebResponse {
                 override fun onResponseSuccess(result: Response<List<UserClass>>) {
@@ -169,10 +181,6 @@ class MapActivity : MvpAppCompatActivity(), MapView {
                         } catch (e: Exception){
                             Log.d("us_user_data_error", "error = $e")
                         }
-
-
-
-
                     }
 
 
@@ -196,7 +204,7 @@ class MapActivity : MvpAppCompatActivity(), MapView {
                 val intent = Intent(this, DrivingsActivity::class.java)
                 intent.putExtra("aim", DrivingsStartTarget.QRandCode)
 
-                startActivity(intent)
+                startActivityForResult(intent, 42)
             } else {
                 getCameraPermission()
             }
@@ -228,11 +236,6 @@ class MapActivity : MvpAppCompatActivity(), MapView {
         binding.contentOfMap.mapScooterItem.constraintLayoutItemScooterParent.clipToOutline = true
         binding.contentOfMap.mapScooterItem.constraintLayoutItemScooterParent.visibility = View.GONE
 
-
-
-
-
-
         binding.navView.setNavigationItemSelectedListener {
             when (it.itemId) {
                 R.id.menuMapItemDrivings -> presenter.sendToTheDrivingsList()
@@ -252,6 +255,7 @@ class MapActivity : MvpAppCompatActivity(), MapView {
 
         binding.contentOfMap.mapView.getMapAsync { map ->
             this.map = map
+            map.uiSettings.isCompassEnabled = false
             map.setStyle(Style.LIGHT) { style ->
 
                 style.addImageAsync(
@@ -271,10 +275,7 @@ class MapActivity : MvpAppCompatActivity(), MapView {
                     getBitmapFromVectorDrawable(R.drawable.ic_chosen_scooter_icon)!!
                 )
                 style.addImageAsync(
-                    MY_MARKER_IMAGE, BitmapFactory.decodeResource(
-                        resources,
-                        R.drawable.mapbox_marker_icon_default
-                    )
+                    MY_MARKER_IMAGE, getBitmapFromVectorDrawable(R.drawable.ic_user_marker)!!
                 )
 
                 localizationPlugin = LocalizationPlugin(binding.contentOfMap.mapView, map, style)
@@ -346,17 +347,16 @@ class MapActivity : MvpAppCompatActivity(), MapView {
 
                     map.style?.removeLayer(ROUTE_LAYER)
                     map.style?.removeSource(ROUTE_SOURCE)
+
                 }
 
                 return@addOnMapClickListener true
             }
+            map.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(44.8789802569887, 37.3763933050872,), 12.0))
+            //getLocationPermission()
+            //initLocationRelationships()
 
-
-            map.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(44.894, 37.316), 8.0))
         }
-
-        getLocationPermission()
-        initLocationRelationships()
 
         mNetworkReceiver = WifiReceiver()
         registerNetworkBroadcastForNougat()
@@ -522,6 +522,12 @@ class MapActivity : MvpAppCompatActivity(), MapView {
                     && grantResults[0] == PackageManager.PERMISSION_GRANTED
                 ) {
                     presenter.updateLocationPermission(true)
+                }else{
+                    val alert = AlertDialog.Builder(this)
+                        .setTitle("Предоставьте разрешение")
+                        .setMessage("Приложение не может корректно рабоатать без этого разрешения")
+                        .create()
+                    alert.show()
                 }
             }
 
@@ -533,6 +539,12 @@ class MapActivity : MvpAppCompatActivity(), MapView {
                     intent.putExtra("aim", DrivingsStartTarget.QRandCode)
 
                     startActivity(intent)
+                }else{
+                    val alert = AlertDialog.Builder(this)
+                        .setTitle("Предоставьте разрешение")
+                        .setMessage("Приложение не может корректно рабоатать без этого разрешения")
+                        .create()
+                    alert.show()
                 }
             }
         }
@@ -798,7 +810,9 @@ class MapActivity : MvpAppCompatActivity(), MapView {
     @SuppressLint("UseCompatLoadingForDrawables")
     override fun initPopupMapView(orders: List<Order>, bookCount: Int, rentCount: Int) {
         runOnUiThread {
-            disposableJobsBag.forEach(Job::cancel)
+            disposableJobsBag.forEach{
+                it.cancel()
+            }
             disposableJobsBag.clear()
 
             if (bookCount == 0 && rentCount == 0) {
@@ -984,18 +998,21 @@ class MapActivity : MvpAppCompatActivity(), MapView {
 
             val parkingZoneLayer = FillLayer(PARKING_LAYER, PARKING_SOURCE)
             parkingZoneLayer.setProperties(
-                fillColor(PARKING_LINE_COLOR)
+                fillColor(PARKING_LINE_COLOR),
+                visibility(Property.NONE)
             )
 
             val parkingBonusZoneLayer = FillLayer(PARKING_BONUS_LAYER, PARKING_BONUS_SOURCE)
             parkingZoneLayer.setProperties(
-                fillColor(PARKING_BONUS_COLOR)
+                fillColor(PARKING_BONUS_COLOR),
+                visibility(Property.NONE)
             )
 
 
             map?.style?.addLayerAbove(geoZoneLayer, GEOZONE_BACKGROUND_LAYER)
             map?.style?.addLayerAbove(parkingZoneLayer, GEOZONE_BACKGROUND_LAYER)
             map?.style?.addLayerAbove(parkingBonusZoneLayer, GEOZONE_BACKGROUND_LAYER)
+
         }
     }
 
@@ -1163,6 +1180,63 @@ class MapActivity : MvpAppCompatActivity(), MapView {
 
     }
 
+    /**************  Added by kon3gor   *******************/
+
+    private var isParkingsVisible = false
+
+    /**
+     * Method for making "Powered by SOTA" string a spannable string
+     */
+    private fun changePBSTextColor(){
+        val text = resources.getString(R.string.powered_by_sota)
+        val spannable = SpannableString(text)
+        spannable.setSpan(
+            ForegroundColorSpan(ContextCompat.getColor(this, R.color.qr_purple)),
+            11,
+            text.length,
+            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+        )
+        binding.poweredBy.text = spannable
+
+    }
+
+    fun toggleParkings(view: View) {
+        map?.getStyle {
+            val pB = it.getLayer(PARKING_BONUS_LABEL)
+            val p = it.getLayer(PARKING_LAYER)
+            val count = it.getLayer(COUNT_LAYER)
+            val scooter = it.getLayer(SCOOTERS_LAYER)
+            val clusters = it.getLayer(CLUSTERS_LAYER)
+
+            if (isParkingsVisible){
+                pB?.setProperties(visibility(Property.NONE))
+                p?.setProperties(visibility(Property.NONE))
+                count?.setProperties(visibility(Property.VISIBLE))
+                scooter?.setProperties(visibility(Property.VISIBLE))
+                clusters?.setProperties(visibility(Property.VISIBLE))
+            }else{
+                pB?.setProperties(visibility(Property.VISIBLE))
+                p?.setProperties(visibility(Property.VISIBLE))
+                count?.setProperties(visibility(Property.NONE))
+                scooter?.setProperties(visibility(Property.NONE))
+                clusters?.setProperties(visibility(Property.NONE))
+            }
+
+            isParkingsVisible = !isParkingsVisible
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == 42 && resultCode == Activity.RESULT_OK){
+            val id = data!!.extras!!.getLong("scooter_id")
+            presenter.clickedOnScooterWith(id)
+        }
+
+        super.onActivityResult(requestCode, resultCode, data)
+    }
+
+    /**************  Added by kon3gor   *******************/
+
     override fun onBackPressed() {}
 
     companion object {
@@ -1206,7 +1280,12 @@ class MapActivity : MvpAppCompatActivity(), MapView {
         val TRANSPARENT_COLOR = Color.parseColor("#40FFFFFF")
 
         val MAX_BOOK_TIME = 900000L
+
+        const val SCOOTER_ROUTE_LAYER = "scooter-route-layer"
+        const val SCOOTER_ROUTE_SOURCE = "scooter-route-source"
     }
+
+
 }
 
 enum class MapDialogType {

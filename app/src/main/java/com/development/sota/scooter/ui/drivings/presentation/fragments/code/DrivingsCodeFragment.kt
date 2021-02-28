@@ -1,5 +1,8 @@
 package com.development.sota.scooter.ui.drivings.presentation.fragments.code
 
+import android.app.Activity
+import android.app.Activity.RESULT_OK
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -25,6 +28,9 @@ interface DrivingsCodeView : MvpView {
 
     @AddToEnd
     fun setColorOfPinView(state: DrivingsCodePinViewState)
+
+    @AddToEnd
+    fun finishActivity(code: Long)
 }
 
 class DrivingsCodeFragment(
@@ -96,9 +102,18 @@ class DrivingsCodeFragment(
         }
     }
 
-    override fun gotResultOfCodeChecking(result: Boolean) {
+    override fun finishActivity(code: Long) {
+        val i = Intent().apply {
+            putExtra("scooter_id", code)
+        }
+        val res = if (code != -1L) RESULT_OK else Activity.RESULT_CANCELED
+        requireActivity().setResult(res, i)
+        requireActivity().finishAndRemoveTask()
+    }
+
+    override fun gotResultOfCodeChecking(result: Boolean, scooter: Scooter?) {
         activity?.runOnUiThread {
-            presenter.gotResultFromActivity(result)
+            presenter.gotResultFromActivity(result, scooter)
         }
     }
 }

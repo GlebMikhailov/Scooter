@@ -2,6 +2,7 @@ package com.development.sota.scooter.ui.drivings.presentation.fragments.qr
 
 import com.development.sota.scooter.base.BasePresenter
 import com.development.sota.scooter.ui.drivings.presentation.fragments.QRView
+import com.development.sota.scooter.ui.map.data.Scooter
 import moxy.MvpPresenter
 
 class QRPresenter : MvpPresenter<QRView>(), BasePresenter {
@@ -29,9 +30,10 @@ class QRPresenter : MvpPresenter<QRView>(), BasePresenter {
         }
     }
 
-    fun gotResponseFromActivity(result: Boolean) {
+    fun gotResponseFromActivity(result: Boolean, scooter: Scooter?) {
         if (result) {
             viewState.setLoading(false)
+            viewState.finishActivity(scooter!!.id)
         } else {
             viewState.setLoading(false)
             viewState.sendToCodeFragment()

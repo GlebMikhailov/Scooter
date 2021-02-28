@@ -1,9 +1,11 @@
 package com.development.sota.scooter.ui.drivings.presentation.fragments.code
 
 import com.development.sota.scooter.R
+import com.development.sota.scooter.ui.map.data.Scooter
 import moxy.MvpPresenter
 
 class DrivingsCodePresenter : MvpPresenter<DrivingsCodeView>() {
+
     fun onCodeEntered(code: String) {
         val parsedCode = code.toLongOrNull()
 
@@ -21,7 +23,7 @@ class DrivingsCodePresenter : MvpPresenter<DrivingsCodeView>() {
         }
     }
 
-    fun gotResultFromActivity(result: Boolean) {
+    fun gotResultFromActivity(result: Boolean, scooter: Scooter?) {
         viewState.setLoading(false)
 
         if (result) {
@@ -29,5 +31,7 @@ class DrivingsCodePresenter : MvpPresenter<DrivingsCodeView>() {
         } else {
             viewState.setColorOfPinView(DrivingsCodePinViewState.RED)
         }
+
+        viewState.finishActivity(scooter?.id ?: -1L)
     }
 }
